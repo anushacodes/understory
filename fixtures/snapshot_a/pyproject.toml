@@ -1,0 +1,8 @@
+[project]
+name = "synthetic-ledger-api"
+version = "0.1.0"
+description = "Inert source fixture for repository-understanding evaluation"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
