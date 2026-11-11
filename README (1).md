@@ -15,6 +15,7 @@ Understory focuses exclusively on repository understanding. Import a small publi
 | [Technical specification](docs/TECHNICAL_SPEC.md) | Architecture, identities, source policy, proposed limits, jobs, snapshot publication, retrieval, answers and API contracts |
 | [Implementation backlog](docs/IMPLEMENTATION_BACKLOG.md) | Ordered tasks, dependencies, milestone exits and optional delivery work |
 | [UI reference mapping](docs/UI_REFERENCE.md) | Supplied HTML boards, visual identity, screen composition and scope-compatible behavior |
+| [Architecture decisions and interview notes](docs/ARCHITECTURE_DECISIONS.md) | Chosen approaches, alternatives, tradeoffs, implementation evidence and truthful behavioral-interview prompts |
 | [Project plan](PROJECT_PLAN.md) | Short project overview and decision summary |
 
 These documents replace the earlier repository-plus-contribution-research blueprint. Repository understanding and the supplied HTML's role as UI reference are user-confirmed; operating defaults, limits and technical details are proposals for review.
