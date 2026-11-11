@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1510" viewBox="0 0 1900 1510">
+<title>Understory system architecture</title>
+<desc>Proposed web and MCP request paths, durable PostgreSQL worker indexing, grounded retrieval, and atomic snapshot publication.</desc>
+<rect width="1900" height="1510" fill="#f5f7fb"/>
+<rect x="0" y="0" width="1900" height="153" rx="0" fill="#122039"/>
+<text x="64" y="70" font-family="DejaVu Sans,Arial,sans-serif" font-size="43" fill="#ffffff" font-weight="700">Understory</text>
+<text x="66" y="112" font-family="DejaVu Sans,Arial,sans-serif" font-size="23" fill="#c4d1e7" font-weight="400">Code understanding + contribution research, backed by versioned evidence</text>
+<rect x="1518" y="42" width="316" height="46" rx="23" fill="#243650"/>
+<text x="1541" y="70" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#dbe7fa" font-weight="700">PROPOSED ARCHITECTURE</text>
+<text x="65" y="199" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#2457a7" font-weight="700">01</text>
+<text x="108" y="202" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#17243b" font-weight="700">ASK + INVESTIGATE</text>
+<text x="108" y="233" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#64748b" font-weight="400">A shared API for the web workspace and future agent tools</text>
+<rect x="65" y="274" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="65" y="269" width="405" height="198" rx="18" fill="#ffffff" stroke="#c7d9f9" stroke-width="2"/>
+<rect x="84" y="292" width="5" height="27" rx="2" fill="#2457a7"/>
+<text x="103" y="317" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#2457a7" font-weight="700">Web workspace</text>
+<text x="89" y="364" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Repo overview + code viewer</text>
+<text x="89" y="393" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Search, chat + issue briefs</text>
+<text x="89" y="422" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Clickable evidence + timestamps</text>
+<text x="89" y="449" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#2457a7" font-weight="700">React + TypeScript</text>
+<rect x="520" y="274" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="520" y="269" width="405" height="198" rx="18" fill="#ffffff" stroke="#c7d9f9" stroke-width="2"/>
+<rect x="539" y="292" width="5" height="27" rx="2" fill="#2457a7"/>
+<text x="558" y="317" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#2457a7" font-weight="700">Python API</text>
+<text x="544" y="364" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Owner auth + scope checks</text>
+<text x="544" y="393" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Usage budgets + typed requests</text>
+<text x="544" y="422" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">SSE progress + job submission</text>
+<text x="544" y="449" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#2457a7" font-weight="700">FastAPI</text>
+<rect x="975" y="274" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="975" y="269" width="405" height="198" rx="18" fill="#ffffff" stroke="#c7d9f9" stroke-width="2"/>
+<rect x="994" y="292" width="5" height="27" rx="2" fill="#2457a7"/>
+<text x="1013" y="317" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#2457a7" font-weight="700">Grounded research</text>
+<text x="999" y="364" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Retrieve, inspect, answer</text>
+<text x="999" y="393" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Verify references + state limits</text>
+<text x="999" y="422" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Bounded live GitHub status reads</text>
+<text x="999" y="449" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#2457a7" font-weight="700">Python application services</text>
+<rect x="1430" y="274" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="1430" y="269" width="405" height="198" rx="18" fill="#fffaf2" stroke="#f2d4ae" stroke-width="2"/>
+<rect x="1449" y="292" width="5" height="27" rx="2" fill="#ad631b"/>
+<text x="1468" y="317" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#ad631b" font-weight="700">Model provider</text>
+<text x="1454" y="364" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Generate from selected evidence</text>
+<text x="1454" y="393" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Embed queries + source chunks</text>
+<text x="1454" y="422" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Versioned configuration + quotas</text>
+<text x="1454" y="449" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#ad631b" font-weight="700">Provider-neutral adapters</text>
+<polyline points="470,359 520,359" fill="none" stroke="#6b7e99" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="520.0,359.0 509.4,364.5 509.4,353.5" fill="#6b7e99"/>
+<text x="471" y="343" font-family="DejaVu Sans,Arial,sans-serif" font-size="13" fill="#64748b" font-weight="400">HTTPS</text>
+<polyline points="925,359 975,359" fill="none" stroke="#6b7e99" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="975.0,359.0 964.4,364.5 964.4,353.5" fill="#6b7e99"/>
+<text x="926" y="343" font-family="DejaVu Sans,Arial,sans-serif" font-size="13" fill="#64748b" font-weight="400">Ask</text>
+<polyline points="1380,359 1430,359" fill="none" stroke="#6b7e99" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1430.0,359.0 1419.4,364.5 1419.4,353.5" fill="#6b7e99"/>
+<text x="1381" y="343" font-family="DejaVu Sans,Arial,sans-serif" font-size="13" fill="#64748b" font-weight="400">LLM</text>
+<text x="65" y="529" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#7046b8" font-weight="700">02</text>
+<text x="108" y="532" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#17243b" font-weight="700">RETRIEVE + COORDINATE</text>
+<text x="108" y="563" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#64748b" font-weight="400">One database for content, job state and progress</text>
+<rect x="65" y="604" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="65" y="599" width="405" height="198" rx="18" fill="#eef1f6" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="84" y="622" width="5" height="27" rx="2" fill="#64748b"/>
+<text x="103" y="647" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#64748b" font-weight="700">MCP adapter · later</text>
+<text x="89" y="694" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">search_code / get_symbol</text>
+<text x="89" y="723" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">read_file / investigate_issue</text>
+<text x="89" y="752" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Same services + access rules</text>
+<text x="89" y="779" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#64748b" font-weight="700">Read-only tools first</text>
+<rect x="520" y="604" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="520" y="599" width="405" height="198" rx="18" fill="#ffffff" stroke="#d9d0f7" stroke-width="2"/>
+<rect x="539" y="622" width="5" height="27" rx="2" fill="#7046b8"/>
+<text x="558" y="647" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#7046b8" font-weight="700">Durable jobs + events</text>
+<text x="544" y="694" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Queued, leased, retried, done</text>
+<text x="544" y="723" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Heartbeats + fenced checkpoints</text>
+<text x="544" y="752" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Persisted progress for reconnect</text>
+<text x="544" y="779" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#7046b8" font-weight="700">Logical tables in PostgreSQL</text>
+<rect x="975" y="604" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="975" y="599" width="405" height="198" rx="18" fill="#ffffff" stroke="#d9d0f7" stroke-width="2"/>
+<rect x="994" y="622" width="5" height="27" rx="2" fill="#7046b8"/>
+<text x="1013" y="647" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#7046b8" font-weight="700">Hybrid retrieval</text>
+<text x="999" y="694" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Exact symbols + text + vectors</text>
+<text x="999" y="723" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Rank fusion + context expansion</text>
+<text x="999" y="752" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Filter repository + snapshot</text>
+<text x="999" y="779" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#7046b8" font-weight="700">One shared retrieval engine</text>
+<rect x="1430" y="604" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="1430" y="599" width="405" height="198" rx="18" fill="#ffffff" stroke="#d9d0f7" stroke-width="2"/>
+<rect x="1449" y="622" width="5" height="27" rx="2" fill="#7046b8"/>
+<text x="1468" y="647" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#7046b8" font-weight="700">Postgres + pgvector</text>
+<text x="1454" y="694" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Versions, manifests + symbols</text>
+<text x="1454" y="723" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Passages, vectors + relationships</text>
+<text x="1454" y="752" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Jobs, evidence, chats + usage</text>
+<text x="1454" y="779" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#7046b8" font-weight="700">Supabase or local PostgreSQL</text>
+<polyline points="722,467 722,599" fill="none" stroke="#8662bc" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 7"/>
+<polygon points="722.0,599.0 716.5,588.4 727.5,588.4" fill="#8662bc"/>
+<text x="739" y="537" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#7046b8" font-weight="400">Enqueue</text>
+<polyline points="1177,467 1177,599" fill="none" stroke="#6b7e99" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1177.0,599.0 1171.5,588.4 1182.5,588.4" fill="#6b7e99"/>
+<text x="1194" y="537" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#64748b" font-weight="400">Search + read</text>
+<polyline points="1380,698 1430,698" fill="none" stroke="#8662bc" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1430.0,698.0 1419.4,703.5 1419.4,692.5" fill="#8662bc"/>
+<polyline points="65,660 40,660 40,492 490,492 490,422 520,422" fill="none" stroke="#8291a8" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 7"/>
+<polygon points="520.0,422.0 509.4,427.5 509.4,416.5" fill="#8291a8"/>
+<text x="280" y="483" font-family="DejaVu Sans,Arial,sans-serif" font-size="15" fill="#64748b" font-weight="400">Tool API</text>
+<text x="65" y="861" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#167452" font-weight="700">03</text>
+<text x="108" y="864" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#17243b" font-weight="700">SCAN + REFRESH</text>
+<text x="108" y="895" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" fill="#64748b" font-weight="400">Local worker; pinned sources; no code execution</text>
+<rect x="65" y="936" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="65" y="931" width="405" height="198" rx="18" fill="#ffffff" stroke="#bfe2d3" stroke-width="2"/>
+<rect x="84" y="954" width="5" height="27" rx="2" fill="#167452"/>
+<text x="103" y="979" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#167452" font-weight="700">Public GitHub sources</text>
+<text x="89" y="1026" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Pinned code + docs at a SHA</text>
+<text x="89" y="1055" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Issues, comments + relevant PRs</text>
+<text x="89" y="1084" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Observed versions + coverage</text>
+<text x="89" y="1111" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#167452" font-weight="700">Python repositories first</text>
+<rect x="520" y="936" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="520" y="931" width="405" height="198" rx="18" fill="#ffffff" stroke="#bfe2d3" stroke-width="2"/>
+<rect x="539" y="954" width="5" height="27" rx="2" fill="#167452"/>
+<text x="558" y="979" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#167452" font-weight="700">Indexing worker</text>
+<text x="544" y="1026" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Claim job + renew fenced lease</text>
+<text x="544" y="1055" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Safe downloads + change hashes</text>
+<text x="544" y="1084" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Resume bounded batches</text>
+<text x="544" y="1111" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#167452" font-weight="700">Separate Python process</text>
+<rect x="975" y="936" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="975" y="931" width="405" height="198" rx="18" fill="#ffffff" stroke="#bfe2d3" stroke-width="2"/>
+<rect x="994" y="954" width="5" height="27" rx="2" fill="#167452"/>
+<text x="1013" y="979" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#167452" font-weight="700">Parse + embed</text>
+<text x="999" y="1026" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">AST symbols + structural chunks</text>
+<text x="999" y="1055" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Metadata + source line ranges</text>
+<text x="999" y="1084" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Reuse exact embedding inputs</text>
+<text x="999" y="1111" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#167452" font-weight="700">Call shared provider adapter</text>
+<rect x="1430" y="936" width="405" height="198" rx="18" fill="#e7ecf3"/>
+<rect x="1430" y="931" width="405" height="198" rx="18" fill="#ffffff" stroke="#bfe2d3" stroke-width="2"/>
+<rect x="1449" y="954" width="5" height="27" rx="2" fill="#167452"/>
+<text x="1468" y="979" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#167452" font-weight="700">Publish snapshot</text>
+<text x="1454" y="1026" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Stage, validate, then activate</text>
+<text x="1454" y="1055" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Exclude deleted source paths</text>
+<text x="1454" y="1084" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Retain prior ready snapshots</text>
+<text x="1454" y="1111" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#167452" font-weight="700">Atomic activation transaction</text>
+<polyline points="722,797 722,931" fill="none" stroke="#8662bc" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 7"/>
+<polygon points="722.0,931.0 716.5,920.4 727.5,920.4" fill="#8662bc"/>
+<text x="739" y="878" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#7046b8" font-weight="400">Lease + heartbeat</text>
+<polyline points="470,1030 520,1030" fill="none" stroke="#268464" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="520.0,1030.0 509.4,1035.5 509.4,1024.5" fill="#268464"/>
+<polyline points="925,1030 975,1030" fill="none" stroke="#268464" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="975.0,1030.0 964.4,1035.5 964.4,1024.5" fill="#268464"/>
+<polyline points="1380,1030 1430,1030" fill="none" stroke="#268464" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1430.0,1030.0 1419.4,1035.5 1419.4,1024.5" fill="#268464"/>
+<polyline points="1632,931 1632,797" fill="none" stroke="#268464" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1632.0,797.0 1637.5,807.6 1626.5,807.6" fill="#268464"/>
+<text x="1649" y="877" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#167452" font-weight="400">Persist</text>
+<text x="66" y="1202" font-family="DejaVu Sans,Arial,sans-serif" font-size="22" fill="#17243b" font-weight="700">04   QUALITY + OPERATIONS</text>
+<rect x="65" y="1237" width="555" height="173" rx="18" fill="#e7ecf3"/>
+<rect x="65" y="1232" width="555" height="173" rx="18" fill="#ffffff" stroke="#d9d0f7" stroke-width="2"/>
+<rect x="84" y="1255" width="5" height="27" rx="2" fill="#7046b8"/>
+<text x="103" y="1280" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#7046b8" font-weight="700">Evaluate the evidence</text>
+<text x="89" y="1327" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Recall@5 + MRR; held-out questions</text>
+<text x="89" y="1356" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Citation integrity + semantic support</text>
+<text x="89" y="1387" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#7046b8" font-weight="700">Pinned corpora + measured results</text>
+<rect x="650" y="1237" width="555" height="173" rx="18" fill="#e7ecf3"/>
+<rect x="650" y="1232" width="555" height="173" rx="18" fill="#ffffff" stroke="#c7d9f9" stroke-width="2"/>
+<rect x="669" y="1255" width="5" height="27" rx="2" fill="#2457a7"/>
+<text x="688" y="1280" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#2457a7" font-weight="700">Protect scope + provenance</text>
+<text x="674" y="1327" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Untrusted sources; read-only tools</text>
+<text x="674" y="1356" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Commit SHA + observation/check times</text>
+<text x="674" y="1387" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#2457a7" font-weight="700">Owner-managed curated showcase</text>
+<rect x="1235" y="1237" width="600" height="173" rx="18" fill="#e7ecf3"/>
+<rect x="1235" y="1232" width="600" height="173" rx="18" fill="#ffffff" stroke="#bfe2d3" stroke-width="2"/>
+<rect x="1254" y="1255" width="5" height="27" rx="2" fill="#167452"/>
+<text x="1273" y="1280" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" fill="#167452" font-weight="700">Operate + recover</text>
+<text x="1259" y="1327" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Retries, cancellation + replay</text>
+<text x="1259" y="1356" font-family="DejaVu Sans,Arial,sans-serif" font-size="19" fill="#334155" font-weight="400">Logs, usage, retention + export</text>
+<text x="1259" y="1387" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" fill="#167452" font-weight="700">Idempotent writes; no duplicate index</text>
+<text x="67" y="1457" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#64748b" font-weight="400">Solid arrows: requests / data     Dashed arrows: control or future integration</text>
+<text x="67" y="1487" font-family="DejaVu Sans,Arial,sans-serif" font-size="17" fill="#64748b" font-weight="400">Job state and content share PostgreSQL. Code snapshots and discussion observations have separate version boundaries.</text>
+</svg>
