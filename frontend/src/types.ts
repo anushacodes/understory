@@ -1,0 +1,13 @@
+export type Coverage = { total_files: number; included_files: number; excluded_files: number; parse_failed_files: number; passages: number; symbols: number; synthetic: boolean; empty: boolean; partial: boolean; capabilities: string[]; inspected_files?: number };
+export type Repository = { id: string; name: string; default_ref: string; active_snapshot_id: string | null; commit_sha: string | null; coverage: Coverage | null; synthetic: boolean; jobs?: Job[] };
+export type Snapshot = { id: string; commit_sha: string; coverage: Coverage; ready_at: string; config: Record<string, unknown> };
+export type FileEntry = { path: string; kind: string | null; state: string; reason: string | null; byte_count: number };
+export type Source = { snapshot_id: string; commit_sha: string; source_version_id: string; path: string; kind: string; state: string; start_line: number; end_line: number; line_count: number; content: string; next_start_line: number | null; source_url: string | null };
+export type Citation = { evidence_id: string; source_version_id: string; path: string; kind: string; label: string; start_line: number; end_line: number; excerpt: string; source_url: string | null; score?: number };
+export type SearchResponse = { snapshot_id: string; commit_sha: string; requested_mode: string; effective_mode: string; coverage: Coverage; warnings: string[]; results: Citation[] };
+export type Job = { id: string; repository_id: string; kind: string; status: string; stage: string; attempt: number; commit_sha: string | null; snapshot_id: string | null; checkpoint: Record<string, unknown>; result: Record<string, unknown> | null; error: { code: string; message: string } | null; last_event_id: number; cancel_requested: boolean; created_at: string; heartbeat_at: string | null; retry_at: string | null };
+export type Answer = { run_id: string; kind: string; snapshot_id: string; commit_sha: string; outcome: string; segments: { text: string; evidence_ids: string[] }[]; citations: Citation[]; gaps: string[]; limitations: string[]; coverage: Coverage };
+export type Run = { id: string; repository_id: string; snapshot_id: string; kind: string; question: string; job: Job; evidence: Citation[]; output: Answer | null; created_at: string };
+export type RunSummary = Pick<Run, 'id' | 'snapshot_id' | 'kind' | 'question' | 'created_at'> & { job_id: string };
+export type Accepted = { job_id: string; run_id?: string; snapshot_id?: string; status: string };
+export type Capabilities = { generation_enabled: boolean; generation_provider: string; embedding_provider: string; allowed_repositories: string[]; synthetic_fixture: string };
