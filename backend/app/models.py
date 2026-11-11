@@ -204,3 +204,21 @@ class UsageEvent(Base):
     actual_tokens: Mapped[int | None]
     outcome: Mapped[str] = mapped_column(default="reserved")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class RunEvidence(Base):
+    __tablename__ = "run_evidence"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("answer_runs.id", ondelete="CASCADE"), index=True)
+    repository_id: Mapped[str] = mapped_column(ForeignKey("repositories.id", ondelete="CASCADE"))
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshots.id"))
+    evidence_id: Mapped[str]
+    source_version_id: Mapped[str] = mapped_column(ForeignKey("source_versions.id"))
+    path: Mapped[str] = mapped_column(Text)
+    start_line: Mapped[int]
+    end_line: Mapped[int]
+    excerpt: Mapped[str] = mapped_column(Text)
+    __table_args__ = (
+        UniqueConstraint("run_id", "evidence_id"),
+        CheckConstraint("start_line >= 1 AND end_line >= start_line"),
+    )

@@ -3,7 +3,7 @@ import signal
 import threading
 import time
 
-from sqlalchemy import func, select, text
+from sqlalchemy import delete, func, select, text
 
 from app.config import settings
 from app.connectors import connector, safe_archive
@@ -17,6 +17,7 @@ from app.models import (
     Job,
     Passage,
     Repository,
+    RunEvidence,
     Snapshot,
     SnapshotFile,
     SourceVersion,
@@ -270,8 +271,10 @@ def activate(job_id: str, token: int, snapshot_id: str):
         snapshot = session.get(Snapshot, snapshot_id)
         if snapshot.repository_id != repo.id:
             raise AppError("scope_mismatch", "Snapshot does not belong to the import repository.")
-        snapshot.state = "ready"
-        snapshot.ready_at = session.scalar(select(func.now()))
+        if snapshot.state != "ready":
+            snapshot.state = "ready"
+            snapshot.ready_at = session.scalar(select(func.now()))
+            session.flush([snapshot])
         activated = job.generation == repo.generation
         if activated:
             repo.active_snapshot_id = snapshot.id
@@ -404,6 +407,21 @@ def answer_question(job_id: str, token: int, config, lease):
         guard(session, job_id, token)
         run = session.get(AnswerRun, run_id)
         run.evidence = evidence
+        session.execute(delete(RunEvidence).where(RunEvidence.run_id == run_id))
+        for item in evidence:
+            session.add(
+                RunEvidence(
+                    run_id=run_id,
+                    repository_id=run.repository_id,
+                    snapshot_id=run.snapshot_id,
+                    evidence_id=item["evidence_id"],
+                    source_version_id=item["source_version_id"],
+                    path=item["path"],
+                    start_line=item["start_line"],
+                    end_line=item["end_line"],
+                    excerpt=item["excerpt"],
+                )
+            )
         run.config = {
             "retrieval_mode": effective_mode,
             "provider": config.generation_provider,
