@@ -1,0 +1,1875 @@
+{
+  "recorded_at": "2026-11-11T06:50:54.794655+00:00",
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "cases": [
+    {
+      "label": "single_file",
+      "seconds": 1.605,
+      "schema_version": 1,
+      "id": "9cd8c76ef7fd4c149e66560424b9b145",
+      "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+      "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+      "kind": "question",
+      "question": "Which account and amount fields must a valid transfer contain?",
+      "job": {
+        "id": "619e0f5b1822427b9dd86252126b2ebf",
+        "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+        "kind": "question",
+        "status": "succeeded",
+        "stage": "publish",
+        "attempt": 1,
+        "commit_sha": null,
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "checkpoint": {
+          "evidence_count": 10,
+          "effective_mode": "hybrid",
+          "paths": [
+            "README.md",
+            "app/api.py",
+            "app/service.py",
+            "app/storage.py",
+            "app/validation.py",
+            "tests/test_transfers.py",
+            "tests/test_validation.py"
+          ]
+        },
+        "result": {
+          "run_id": "9cd8c76ef7fd4c149e66560424b9b145"
+        },
+        "error": null,
+        "cancel_requested": false,
+        "last_event_id": 7,
+        "heartbeat_at": "2026-11-11T06:51:18.200032+00:00",
+        "retry_at": null,
+        "created_at": "2026-11-11T06:51:18.102279+00:00",
+        "finished_at": "2026-11-11T06:51:19.235640+00:00"
+      },
+      "config": {
+        "retrieval_mode": "hybrid",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.1
+      },
+      "evidence": [
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16,
+          "excerpt": "def validate_payload(payload: dict) -> dict:\n    \"\"\"Require account_id and a positive integer amount in cents.\"\"\"\n    account_id = payload.get(\"account_id\")\n    amount = payload.get(\"amount\")\n    if not isinstance(account_id, str) or not account_id.strip():\n        raise ValidationError(\"account_id must be a nonempty string\")\n    if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:\n        raise ValidationError(\"amount must be a positive integer\")\n    return {\"account_id\": account_id.strip(), \"amount\": amount}",
+          "kind": "code",
+          "evidence_id": "e1"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9,
+          "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+          "kind": "code",
+          "evidence_id": "e2"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13,
+          "excerpt": "class TransferService:\n    \"\"\"Coordinates a transfer without owning HTTP or database details.\"\"\"\n\n    def __init__(self, store: LedgerStore):\n        self.store = store\n\n    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+          "kind": "code",
+          "evidence_id": "e3"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13,
+          "excerpt": "    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+          "kind": "code",
+          "evidence_id": "e4"
+        },
+        {
+          "source_version_id": "a19a6649c1574d5ba1104c40451e87c9",
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_positive_amount",
+          "start_line": 5,
+          "end_line": 6,
+          "excerpt": "def test_positive_amount():\n    assert validate_payload({\"account_id\": \"a\", \"amount\": 10})[\"amount\"] == 10",
+          "kind": "test",
+          "evidence_id": "e5"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18,
+          "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+          "kind": "doc",
+          "evidence_id": "e6"
+        },
+        {
+          "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8,
+          "excerpt": "def test_receipt_is_returned():\n    result = TransferService(LedgerStore()).transfer({\"account_id\": \"a\", \"amount\": 10})\n    assert result == {\"receipt_id\": \"receipt-1\", \"accepted\": True}",
+          "kind": "test",
+          "evidence_id": "e7"
+        },
+        {
+          "source_version_id": "a19a6649c1574d5ba1104c40451e87c9",
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_zero_amount_rejected",
+          "start_line": 9,
+          "end_line": 14,
+          "excerpt": "def test_zero_amount_rejected():\n    try:\n        validate_payload({\"account_id\": \"a\", \"amount\": 0})\n    except ValidationError:\n        return\n    raise AssertionError(\"expected validation failure\")",
+          "kind": "test",
+          "evidence_id": "e8"
+        },
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "\"\"\"Validation contracts for incoming transfer requests.\"\"\"\n\n",
+          "kind": "code",
+          "evidence_id": "e9"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10,
+          "excerpt": "    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+          "kind": "code",
+          "evidence_id": "e10"
+        }
+      ],
+      "output": {
+        "outcome": "answered",
+        "segments": [
+          {
+            "text": "A valid transfer must include an \"account_id\" field that is a non\u2011empty string, and an \"amount\" field that is a positive integer (in cents).",
+            "evidence_ids": [
+              "e1",
+              "e6"
+            ]
+          }
+        ],
+        "gaps": [],
+        "limitations": [
+          "The evidence describes validation rules but does not specify additional optional fields; only the required fields are covered.",
+          "Static source inspection; repository code was not executed."
+        ],
+        "run_id": "9cd8c76ef7fd4c149e66560424b9b145",
+        "kind": "question",
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+        "citations": [
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation.validate_payload",
+            "start_line": 8,
+            "end_line": 16,
+            "excerpt": "def validate_payload(payload: dict) -> dict:\n    \"\"\"Require account_id and a positive integer amount in cents.\"\"\"\n    account_id = payload.get(\"account_id\")\n    amount = payload.get(\"amount\")\n    if not isinstance(account_id, str) or not account_id.strip():\n        raise ValidationError(\"account_id must be a nonempty string\")\n    if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:\n        raise ValidationError(\"amount must be a positive integer\")\n    return {\"account_id\": account_id.strip(), \"amount\": amount}",
+            "kind": "code",
+            "evidence_id": "e1",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api.create_transfer",
+            "start_line": 6,
+            "end_line": 9,
+            "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+            "kind": "code",
+            "evidence_id": "e2",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService",
+            "start_line": 4,
+            "end_line": 13,
+            "excerpt": "class TransferService:\n    \"\"\"Coordinates a transfer without owning HTTP or database details.\"\"\"\n\n    def __init__(self, store: LedgerStore):\n        self.store = store\n\n    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+            "kind": "code",
+            "evidence_id": "e3",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService.transfer",
+            "start_line": 10,
+            "end_line": 13,
+            "excerpt": "    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+            "kind": "code",
+            "evidence_id": "e4",
+            "source_url": null
+          },
+          {
+            "source_version_id": "a19a6649c1574d5ba1104c40451e87c9",
+            "path": "tests/test_validation.py",
+            "label": "tests.test_validation.test_positive_amount",
+            "start_line": 5,
+            "end_line": 6,
+            "excerpt": "def test_positive_amount():\n    assert validate_payload({\"account_id\": \"a\", \"amount\": 10})[\"amount\"] == 10",
+            "kind": "test",
+            "evidence_id": "e5",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Validation",
+            "start_line": 13,
+            "end_line": 18,
+            "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+            "kind": "doc",
+            "evidence_id": "e6",
+            "source_url": null
+          },
+          {
+            "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+            "path": "tests/test_transfers.py",
+            "label": "tests.test_transfers.test_receipt_is_returned",
+            "start_line": 6,
+            "end_line": 8,
+            "excerpt": "def test_receipt_is_returned():\n    result = TransferService(LedgerStore()).transfer({\"account_id\": \"a\", \"amount\": 10})\n    assert result == {\"receipt_id\": \"receipt-1\", \"accepted\": True}",
+            "kind": "test",
+            "evidence_id": "e7",
+            "source_url": null
+          },
+          {
+            "source_version_id": "a19a6649c1574d5ba1104c40451e87c9",
+            "path": "tests/test_validation.py",
+            "label": "tests.test_validation.test_zero_amount_rejected",
+            "start_line": 9,
+            "end_line": 14,
+            "excerpt": "def test_zero_amount_rejected():\n    try:\n        validate_payload({\"account_id\": \"a\", \"amount\": 0})\n    except ValidationError:\n        return\n    raise AssertionError(\"expected validation failure\")",
+            "kind": "test",
+            "evidence_id": "e8",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "\"\"\"Validation contracts for incoming transfer requests.\"\"\"\n\n",
+            "kind": "code",
+            "evidence_id": "e9",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.LedgerStore.append_transfer",
+            "start_line": 8,
+            "end_line": 10,
+            "excerpt": "    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+            "kind": "code",
+            "evidence_id": "e10",
+            "source_url": null
+          }
+        ],
+        "coverage": {
+          "total_files": 14,
+          "included_files": 12,
+          "excluded_files": 2,
+          "parse_failed_files": 0,
+          "passages": 36,
+          "symbols": 19,
+          "reused_embeddings": 0,
+          "supported_bytes": 5165,
+          "synthetic": true,
+          "empty": false,
+          "partial": true,
+          "capabilities": [
+            "exact",
+            "lexical",
+            "semantic",
+            "hybrid"
+          ],
+          "inspected_files": 7
+        }
+      },
+      "created_at": "2026-11-11T06:51:18.106957+00:00",
+      "usage": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 1765,
+          "actual_tokens": 1765,
+          "outcome": "settled",
+          "created_at": "2026-11-11T06:51:18.302024+00:00"
+        }
+      ]
+    },
+    {
+      "label": "multi_file",
+      "seconds": 2.357,
+      "schema_version": 1,
+      "id": "ce7554bf66914f748cd7bd75f3881909",
+      "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+      "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+      "kind": "question",
+      "question": "How does create_transfer delegate to TransferService and LedgerStore?",
+      "job": {
+        "id": "30f6e50cb2b6427ebdf054f09e73b052",
+        "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+        "kind": "question",
+        "status": "succeeded",
+        "stage": "publish",
+        "attempt": 1,
+        "commit_sha": null,
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "checkpoint": {
+          "evidence_count": 11,
+          "effective_mode": "hybrid",
+          "paths": [
+            "README.md",
+            "app/api.py",
+            "app/service.py",
+            "app/storage.py",
+            "docs/architecture.rst",
+            "tests/test_transfers.py"
+          ]
+        },
+        "result": {
+          "run_id": "ce7554bf66914f748cd7bd75f3881909"
+        },
+        "error": null,
+        "cancel_requested": false,
+        "last_event_id": 7,
+        "heartbeat_at": "2026-11-11T06:51:20.325645+00:00",
+        "retry_at": null,
+        "created_at": "2026-11-11T06:51:19.702099+00:00",
+        "finished_at": "2026-11-11T06:51:21.334168+00:00"
+      },
+      "config": {
+        "retrieval_mode": "hybrid",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.1
+      },
+      "evidence": [
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13,
+          "excerpt": "class TransferService:\n    \"\"\"Coordinates a transfer without owning HTTP or database details.\"\"\"\n\n    def __init__(self, store: LedgerStore):\n        self.store = store\n\n    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+          "kind": "code",
+          "evidence_id": "e1"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8,
+          "excerpt": "    def __init__(self, store: LedgerStore):\n        self.store = store",
+          "kind": "code",
+          "evidence_id": "e2"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9,
+          "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+          "kind": "code",
+          "evidence_id": "e3"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12,
+          "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+          "kind": "doc",
+          "evidence_id": "e4"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10,
+          "excerpt": "class LedgerStore:\n    def __init__(self):\n        self.entries = []\n\n    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+          "kind": "code",
+          "evidence_id": "e5"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13,
+          "excerpt": "    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+          "kind": "code",
+          "evidence_id": "e6"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10,
+          "excerpt": "    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+          "kind": "code",
+          "evidence_id": "e7"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "from app.storage import LedgerStore\n\n",
+          "kind": "code",
+          "evidence_id": "e8"
+        },
+        {
+          "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"Static example for locating service-level test source.\"\"\"\nfrom app.service import TransferService\nfrom app.storage import LedgerStore\n\n",
+          "kind": "test",
+          "evidence_id": "e9"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+          "kind": "code",
+          "evidence_id": "e10"
+        },
+        {
+          "source_version_id": "e9f2294271d44b2dbe6dd28cf5718ff4",
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10,
+          "excerpt": "Request flow\n------------\n\nThe request boundary validates a transfer payload, then delegates to the service.\nThe service receives a store as a constructor dependency. The store appends a\ncopy of each transfer and returns a monotonically numbered receipt identifier.\n",
+          "kind": "doc",
+          "evidence_id": "e11"
+        }
+      ],
+      "output": {
+        "outcome": "answered",
+        "segments": [
+          {
+            "text": "The API function `create_transfer` first validates the incoming payload using `validate_payload` and then calls the `transfer` method of a `TransferService` instance, passing the validated data.",
+            "evidence_ids": [
+              "e3"
+            ]
+          },
+          {
+            "text": "`TransferService` is constructed with a `LedgerStore` (its `__init__` stores the reference in `self.store`).",
+            "evidence_ids": [
+              "e2"
+            ]
+          },
+          {
+            "text": "When `service.transfer` is invoked, it calls `self.store.append_transfer(payload)`, delegating the persistence to the `LedgerStore`. The store appends a copy of the payload to its in\u2011memory list and returns a receipt identifier, which the service wraps in a response dict.",
+            "evidence_ids": [
+              "e6",
+              "e7"
+            ]
+          }
+        ],
+        "gaps": [],
+        "limitations": [
+          "Explanation limited to code excerpts provided; does not cover error handling or validation details beyond the shown calls.",
+          "Static source inspection; repository code was not executed."
+        ],
+        "run_id": "ce7554bf66914f748cd7bd75f3881909",
+        "kind": "question",
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+        "citations": [
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService",
+            "start_line": 4,
+            "end_line": 13,
+            "excerpt": "class TransferService:\n    \"\"\"Coordinates a transfer without owning HTTP or database details.\"\"\"\n\n    def __init__(self, store: LedgerStore):\n        self.store = store\n\n    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+            "kind": "code",
+            "evidence_id": "e1",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService.__init__",
+            "start_line": 7,
+            "end_line": 8,
+            "excerpt": "    def __init__(self, store: LedgerStore):\n        self.store = store",
+            "kind": "code",
+            "evidence_id": "e2",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api.create_transfer",
+            "start_line": 6,
+            "end_line": 9,
+            "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+            "kind": "code",
+            "evidence_id": "e3",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Purpose and architecture",
+            "start_line": 6,
+            "end_line": 12,
+            "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+            "kind": "doc",
+            "evidence_id": "e4",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.LedgerStore",
+            "start_line": 4,
+            "end_line": 10,
+            "excerpt": "class LedgerStore:\n    def __init__(self):\n        self.entries = []\n\n    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+            "kind": "code",
+            "evidence_id": "e5",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService.transfer",
+            "start_line": 10,
+            "end_line": 13,
+            "excerpt": "    def transfer(self, payload: dict) -> dict:\n        \"\"\"Persist an accepted transfer and return its receipt.\"\"\"\n        receipt = self.store.append_transfer(payload)\n        return {\"receipt_id\": receipt, \"accepted\": True}",
+            "kind": "code",
+            "evidence_id": "e6",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.LedgerStore.append_transfer",
+            "start_line": 8,
+            "end_line": 10,
+            "excerpt": "    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+            "kind": "code",
+            "evidence_id": "e7",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "from app.storage import LedgerStore\n\n",
+            "kind": "code",
+            "evidence_id": "e8",
+            "source_url": null
+          },
+          {
+            "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+            "path": "tests/test_transfers.py",
+            "label": "tests.test_transfers",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"Static example for locating service-level test source.\"\"\"\nfrom app.service import TransferService\nfrom app.storage import LedgerStore\n\n",
+            "kind": "test",
+            "evidence_id": "e9",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+            "kind": "code",
+            "evidence_id": "e10",
+            "source_url": null
+          },
+          {
+            "source_version_id": "e9f2294271d44b2dbe6dd28cf5718ff4",
+            "path": "docs/architecture.rst",
+            "label": "Request flow",
+            "start_line": 4,
+            "end_line": 10,
+            "excerpt": "Request flow\n------------\n\nThe request boundary validates a transfer payload, then delegates to the service.\nThe service receives a store as a constructor dependency. The store appends a\ncopy of each transfer and returns a monotonically numbered receipt identifier.\n",
+            "kind": "doc",
+            "evidence_id": "e11",
+            "source_url": null
+          }
+        ],
+        "coverage": {
+          "total_files": 14,
+          "included_files": 12,
+          "excluded_files": 2,
+          "parse_failed_files": 0,
+          "passages": 36,
+          "symbols": 19,
+          "reused_embeddings": 0,
+          "supported_bytes": 5165,
+          "synthetic": true,
+          "empty": false,
+          "partial": true,
+          "capabilities": [
+            "exact",
+            "lexical",
+            "semantic",
+            "hybrid"
+          ],
+          "inspected_files": 6
+        }
+      },
+      "created_at": "2026-11-11T06:51:19.703921+00:00",
+      "usage": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 1826,
+          "actual_tokens": 1826,
+          "outcome": "settled",
+          "created_at": "2026-11-11T06:51:20.433432+00:00"
+        }
+      ]
+    },
+    {
+      "label": "overview",
+      "seconds": 2.392,
+      "schema_version": 1,
+      "id": "97e60b7bacec4ec7b76d284a7dd988e1",
+      "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+      "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+      "kind": "overview",
+      "question": "Explain this repository's purpose, main modules, and entry points.",
+      "job": {
+        "id": "f2c8aeb8c98e4cd6b802188f3052c363",
+        "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+        "kind": "overview",
+        "status": "succeeded",
+        "stage": "publish",
+        "attempt": 1,
+        "commit_sha": null,
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "checkpoint": {
+          "evidence_count": 12,
+          "effective_mode": "overview_inventory",
+          "paths": [
+            "README.md",
+            "app/api.py",
+            "app/formatting.py",
+            "config/settings.json",
+            "pyproject.toml"
+          ]
+        },
+        "result": {
+          "run_id": "97e60b7bacec4ec7b76d284a7dd988e1"
+        },
+        "error": null,
+        "cancel_requested": false,
+        "last_event_id": 7,
+        "heartbeat_at": "2026-11-11T06:51:22.424129+00:00",
+        "retry_at": null,
+        "created_at": "2026-11-11T06:51:22.084030+00:00",
+        "finished_at": "2026-11-11T06:51:24.373038+00:00"
+      },
+      "config": {
+        "retrieval_mode": "overview_inventory",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.1
+      },
+      "evidence": [
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Ledger API \u2014 synthetic Understory fixture",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "# Ledger API \u2014 synthetic Understory fixture\n\nThis is inert example source for testing repository understanding. It is not a\nlive GitHub project. Understory reads this source and does not execute it.\n",
+          "kind": "doc",
+          "evidence_id": "e1"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12,
+          "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+          "kind": "doc",
+          "evidence_id": "e2"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18,
+          "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+          "kind": "doc",
+          "evidence_id": "e3"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23,
+          "excerpt": "## Tests and limitations\n\nThe test files describe validation and transfer behavior. Finding these files\ndoes not establish that tests have been run. This fixture has no authentication,\nproduction database, Kubernetes deployment, billing provider, or encryption key.",
+          "kind": "doc",
+          "evidence_id": "e4"
+        },
+        {
+          "source_version_id": "ff688bd6397f4f28b1224f474c0b9b96",
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6,
+          "excerpt": "{\n  \"application\": \"ledger-fixture\",\n  \"storage\": \"memory\",\n  \"currency\": \"USD\",\n  \"log_level\": \"INFO\"\n}",
+          "kind": "config",
+          "evidence_id": "e5"
+        },
+        {
+          "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6,
+          "excerpt": "[project]\nname = \"synthetic-ledger-api\"\nversion = \"0.1.0\"\ndescription = \"Inert source fixture for repository-understanding evaluation\"\nrequires-python = \">=3.12\"\n",
+          "kind": "config",
+          "evidence_id": "e6"
+        },
+        {
+          "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+          "path": "pyproject.toml",
+          "label": "[tool.pytest.ini_options]",
+          "start_line": 7,
+          "end_line": 8,
+          "excerpt": "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]",
+          "kind": "config",
+          "evidence_id": "e7"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+          "kind": "code",
+          "evidence_id": "e8"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9,
+          "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+          "kind": "code",
+          "evidence_id": "e9"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api.health",
+          "start_line": 12,
+          "end_line": 13,
+          "excerpt": "def health() -> dict:\n    return {\"status\": \"ok\"}",
+          "kind": "code",
+          "evidence_id": "e10"
+        },
+        {
+          "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a display label without changing its case.\"\"\"\n    return \" \".join(value.split())",
+          "kind": "code",
+          "evidence_id": "e11"
+        },
+        {
+          "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+          "path": "app/formatting.py",
+          "label": "app.formatting.traced",
+          "start_line": 6,
+          "end_line": 8,
+          "excerpt": "def traced(function):\n    \"\"\"A deliberately inert decorator used by parser fixtures.\"\"\"\n    return function",
+          "kind": "code",
+          "evidence_id": "e12"
+        }
+      ],
+      "output": {
+        "outcome": "answered",
+        "segments": [
+          {
+            "text": "The repository is a synthetic fixture that models a Ledger API for handling transfer requests; it is not a live production service.",
+            "evidence_ids": [
+              "e1",
+              "e2"
+            ]
+          },
+          {
+            "text": "The main purpose is to accept transfer requests, validate them, and process them through a service layer that writes entries to an in\u2011memory store, as described in the README architecture section.",
+            "evidence_ids": [
+              "e2"
+            ]
+          },
+          {
+            "text": "Key modules are:",
+            "evidence_ids": [
+              "e2"
+            ]
+          },
+          {
+            "text": "-\u202fapp/api.py \u2013 the HTTP\u2011independent request boundary exposing functions to create a transfer and a health check.",
+            "evidence_ids": [
+              "e8",
+              "e9",
+              "e10"
+            ]
+          },
+          {
+            "text": "-\u202fapp/validation.py \u2013 performs payload checks and raises ValidationError for invalid data (referenced in the purpose description).",
+            "evidence_ids": [
+              "e2",
+              "e3"
+            ]
+          },
+          {
+            "text": "-\u202fapp/service.py \u2013 defines TransferService which the API calls to execute a transfer (mentioned in the architecture overview).",
+            "evidence_ids": [
+              "e2"
+            ]
+          },
+          {
+            "text": "-\u202fapp/storage.py \u2013 provides LedgerStore that keeps entries in memory for this fixture (mentioned in the architecture overview).",
+            "evidence_ids": [
+              "e2"
+            ]
+          },
+          {
+            "text": "-\u202fapp/formatting.py \u2013 contains utility functions such as normalize and a no\u2011op traced decorator, used by the fixture but not part of the core transfer flow.",
+            "evidence_ids": [
+              "e11",
+              "e12"
+            ]
+          },
+          {
+            "text": "Entry points for the API are the functions in app/api.py: `create_transfer(payload, service)` which validates the payload via `validate_payload` and then calls `service.transfer`, and `health()` which returns a simple status dictionary.",
+            "evidence_ids": [
+              "e9",
+              "e10"
+            ]
+          }
+        ],
+        "gaps": [
+          "No source code excerpts for app/validation.py, app/service.py, or app/storage.py are provided, so detailed implementation cannot be shown."
+        ],
+        "limitations": [
+          "Explanation relies on README descriptions for service and storage modules; actual code is not present in the evidence.",
+          "Static source inspection; repository code was not executed."
+        ],
+        "run_id": "97e60b7bacec4ec7b76d284a7dd988e1",
+        "kind": "overview",
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+        "citations": [
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Ledger API \u2014 synthetic Understory fixture",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "# Ledger API \u2014 synthetic Understory fixture\n\nThis is inert example source for testing repository understanding. It is not a\nlive GitHub project. Understory reads this source and does not execute it.\n",
+            "kind": "doc",
+            "evidence_id": "e1",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Purpose and architecture",
+            "start_line": 6,
+            "end_line": 12,
+            "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+            "kind": "doc",
+            "evidence_id": "e2",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Validation",
+            "start_line": 13,
+            "end_line": 18,
+            "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+            "kind": "doc",
+            "evidence_id": "e3",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Tests and limitations",
+            "start_line": 19,
+            "end_line": 23,
+            "excerpt": "## Tests and limitations\n\nThe test files describe validation and transfer behavior. Finding these files\ndoes not establish that tests have been run. This fixture has no authentication,\nproduction database, Kubernetes deployment, billing provider, or encryption key.",
+            "kind": "doc",
+            "evidence_id": "e4",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff688bd6397f4f28b1224f474c0b9b96",
+            "path": "config/settings.json",
+            "label": "{",
+            "start_line": 1,
+            "end_line": 6,
+            "excerpt": "{\n  \"application\": \"ledger-fixture\",\n  \"storage\": \"memory\",\n  \"currency\": \"USD\",\n  \"log_level\": \"INFO\"\n}",
+            "kind": "config",
+            "evidence_id": "e5",
+            "source_url": null
+          },
+          {
+            "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+            "path": "pyproject.toml",
+            "label": "[project]",
+            "start_line": 1,
+            "end_line": 6,
+            "excerpt": "[project]\nname = \"synthetic-ledger-api\"\nversion = \"0.1.0\"\ndescription = \"Inert source fixture for repository-understanding evaluation\"\nrequires-python = \">=3.12\"\n",
+            "kind": "config",
+            "evidence_id": "e6",
+            "source_url": null
+          },
+          {
+            "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+            "path": "pyproject.toml",
+            "label": "[tool.pytest.ini_options]",
+            "start_line": 7,
+            "end_line": 8,
+            "excerpt": "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]",
+            "kind": "config",
+            "evidence_id": "e7",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+            "kind": "code",
+            "evidence_id": "e8",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api.create_transfer",
+            "start_line": 6,
+            "end_line": 9,
+            "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+            "kind": "code",
+            "evidence_id": "e9",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api.health",
+            "start_line": 12,
+            "end_line": 13,
+            "excerpt": "def health() -> dict:\n    return {\"status\": \"ok\"}",
+            "kind": "code",
+            "evidence_id": "e10",
+            "source_url": null
+          },
+          {
+            "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+            "path": "app/formatting.py",
+            "label": "app.formatting.normalize",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a display label without changing its case.\"\"\"\n    return \" \".join(value.split())",
+            "kind": "code",
+            "evidence_id": "e11",
+            "source_url": null
+          },
+          {
+            "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+            "path": "app/formatting.py",
+            "label": "app.formatting.traced",
+            "start_line": 6,
+            "end_line": 8,
+            "excerpt": "def traced(function):\n    \"\"\"A deliberately inert decorator used by parser fixtures.\"\"\"\n    return function",
+            "kind": "code",
+            "evidence_id": "e12",
+            "source_url": null
+          }
+        ],
+        "coverage": {
+          "total_files": 14,
+          "included_files": 12,
+          "excluded_files": 2,
+          "parse_failed_files": 0,
+          "passages": 36,
+          "symbols": 19,
+          "reused_embeddings": 0,
+          "supported_bytes": 5165,
+          "synthetic": true,
+          "empty": false,
+          "partial": true,
+          "capabilities": [
+            "exact",
+            "lexical",
+            "semantic",
+            "hybrid"
+          ],
+          "inspected_files": 5
+        }
+      },
+      "created_at": "2026-11-11T06:51:22.089388+00:00",
+      "usage": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 2153,
+          "actual_tokens": 2153,
+          "outcome": "settled",
+          "created_at": "2026-11-11T06:51:22.513910+00:00"
+        }
+      ]
+    },
+    {
+      "label": "held-07",
+      "seconds": 2.34,
+      "schema_version": 1,
+      "id": "b9d83ddaf0234c8ca9a58771f3903a86",
+      "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+      "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+      "kind": "question",
+      "question": "What is the production encryption key value?",
+      "job": {
+        "id": "ce9b62832fb14c00bb1097f839d4d50a",
+        "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+        "kind": "question",
+        "status": "succeeded",
+        "stage": "publish",
+        "attempt": 1,
+        "commit_sha": null,
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "checkpoint": {
+          "evidence_count": 12,
+          "effective_mode": "hybrid",
+          "paths": [
+            "README.md",
+            "app/api.py",
+            "app/formatting.py",
+            "app/storage.py",
+            "app/validation.py",
+            "config/settings.json",
+            "pyproject.toml"
+          ]
+        },
+        "result": {
+          "run_id": "b9d83ddaf0234c8ca9a58771f3903a86"
+        },
+        "error": null,
+        "cancel_requested": false,
+        "last_event_id": 7,
+        "heartbeat_at": "2026-11-11T06:51:25.427456+00:00",
+        "retry_at": null,
+        "created_at": "2026-11-11T06:51:24.459014+00:00",
+        "finished_at": "2026-11-11T06:51:26.263923+00:00"
+      },
+      "config": {
+        "retrieval_mode": "hybrid",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.1
+      },
+      "evidence": [
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23,
+          "excerpt": "## Tests and limitations\n\nThe test files describe validation and transfer behavior. Finding these files\ndoes not establish that tests have been run. This fixture has no authentication,\nproduction database, Kubernetes deployment, billing provider, or encryption key.",
+          "kind": "doc",
+          "evidence_id": "e1"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15,
+          "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a storage key.\"\"\"\n    return value.strip().lower()",
+          "kind": "code",
+          "evidence_id": "e2"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "\"\"\"In-memory storage for the synthetic fixture; not production persistence.\"\"\"\n\n",
+          "kind": "code",
+          "evidence_id": "e3"
+        },
+        {
+          "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+          "path": "app/formatting.py",
+          "label": "app.formatting.caf\u00e9_receipt",
+          "start_line": 11,
+          "end_line": 16,
+          "excerpt": "@traced\nasync def caf\u00e9_receipt(account_id: str) -> str:\n    \"\"\"Return a Unicode receipt label; does not perform network I/O.\"\"\"\n    def decorate(value: str) -> str:\n        return f\"caf\u00e9 \u00b7 {value}\"\n    return decorate(account_id)",
+          "kind": "code",
+          "evidence_id": "e4"
+        },
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5,
+          "excerpt": "class ValidationError(ValueError):\n    \"\"\"The request does not satisfy the transfer contract.\"\"\"",
+          "kind": "code",
+          "evidence_id": "e5"
+        },
+        {
+          "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+          "path": "app/formatting.py",
+          "label": "app.formatting.caf\u00e9_receipt.decorate",
+          "start_line": 14,
+          "end_line": 15,
+          "excerpt": "    def decorate(value: str) -> str:\n        return f\"caf\u00e9 \u00b7 {value}\"",
+          "kind": "code",
+          "evidence_id": "e6"
+        },
+        {
+          "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a display label without changing its case.\"\"\"\n    return \" \".join(value.split())",
+          "kind": "code",
+          "evidence_id": "e7"
+        },
+        {
+          "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6,
+          "excerpt": "[project]\nname = \"synthetic-ledger-api\"\nversion = \"0.1.0\"\ndescription = \"Inert source fixture for repository-understanding evaluation\"\nrequires-python = \">=3.12\"\n",
+          "kind": "config",
+          "evidence_id": "e8"
+        },
+        {
+          "source_version_id": "ff688bd6397f4f28b1224f474c0b9b96",
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6,
+          "excerpt": "{\n  \"application\": \"ledger-fixture\",\n  \"storage\": \"memory\",\n  \"currency\": \"USD\",\n  \"log_level\": \"INFO\"\n}",
+          "kind": "config",
+          "evidence_id": "e9"
+        },
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16,
+          "excerpt": "def validate_payload(payload: dict) -> dict:\n    \"\"\"Require account_id and a positive integer amount in cents.\"\"\"\n    account_id = payload.get(\"account_id\")\n    amount = payload.get(\"amount\")\n    if not isinstance(account_id, str) or not account_id.strip():\n        raise ValidationError(\"account_id must be a nonempty string\")\n    if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:\n        raise ValidationError(\"amount must be a positive integer\")\n    return {\"account_id\": account_id.strip(), \"amount\": amount}",
+          "kind": "code",
+          "evidence_id": "e10"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+          "kind": "code",
+          "evidence_id": "e11"
+        },
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9,
+          "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+          "kind": "code",
+          "evidence_id": "e12"
+        }
+      ],
+      "output": {
+        "outcome": "insufficient_evidence",
+        "segments": [],
+        "gaps": [
+          "No evidence provided regarding a production encryption key value; repository mentions lack of encryption key in README."
+        ],
+        "limitations": [
+          "Answer cannot be derived from given excerpts; repository appears to be a synthetic fixture without production secrets.",
+          "Static source inspection; repository code was not executed."
+        ],
+        "run_id": "b9d83ddaf0234c8ca9a58771f3903a86",
+        "kind": "question",
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+        "citations": [
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Tests and limitations",
+            "start_line": 19,
+            "end_line": 23,
+            "excerpt": "## Tests and limitations\n\nThe test files describe validation and transfer behavior. Finding these files\ndoes not establish that tests have been run. This fixture has no authentication,\nproduction database, Kubernetes deployment, billing provider, or encryption key.",
+            "kind": "doc",
+            "evidence_id": "e1",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.normalize",
+            "start_line": 13,
+            "end_line": 15,
+            "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a storage key.\"\"\"\n    return value.strip().lower()",
+            "kind": "code",
+            "evidence_id": "e2",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "\"\"\"In-memory storage for the synthetic fixture; not production persistence.\"\"\"\n\n",
+            "kind": "code",
+            "evidence_id": "e3",
+            "source_url": null
+          },
+          {
+            "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+            "path": "app/formatting.py",
+            "label": "app.formatting.caf\u00e9_receipt",
+            "start_line": 11,
+            "end_line": 16,
+            "excerpt": "@traced\nasync def caf\u00e9_receipt(account_id: str) -> str:\n    \"\"\"Return a Unicode receipt label; does not perform network I/O.\"\"\"\n    def decorate(value: str) -> str:\n        return f\"caf\u00e9 \u00b7 {value}\"\n    return decorate(account_id)",
+            "kind": "code",
+            "evidence_id": "e4",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation.ValidationError",
+            "start_line": 4,
+            "end_line": 5,
+            "excerpt": "class ValidationError(ValueError):\n    \"\"\"The request does not satisfy the transfer contract.\"\"\"",
+            "kind": "code",
+            "evidence_id": "e5",
+            "source_url": null
+          },
+          {
+            "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+            "path": "app/formatting.py",
+            "label": "app.formatting.caf\u00e9_receipt.decorate",
+            "start_line": 14,
+            "end_line": 15,
+            "excerpt": "    def decorate(value: str) -> str:\n        return f\"caf\u00e9 \u00b7 {value}\"",
+            "kind": "code",
+            "evidence_id": "e6",
+            "source_url": null
+          },
+          {
+            "source_version_id": "dafec02826e140318a2e8929e33cd77a",
+            "path": "app/formatting.py",
+            "label": "app.formatting.normalize",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "def normalize(value: str) -> str:\n    \"\"\"Normalize a display label without changing its case.\"\"\"\n    return \" \".join(value.split())",
+            "kind": "code",
+            "evidence_id": "e7",
+            "source_url": null
+          },
+          {
+            "source_version_id": "781e88a6636640528f7a2921ce0125f4",
+            "path": "pyproject.toml",
+            "label": "[project]",
+            "start_line": 1,
+            "end_line": 6,
+            "excerpt": "[project]\nname = \"synthetic-ledger-api\"\nversion = \"0.1.0\"\ndescription = \"Inert source fixture for repository-understanding evaluation\"\nrequires-python = \">=3.12\"\n",
+            "kind": "config",
+            "evidence_id": "e8",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff688bd6397f4f28b1224f474c0b9b96",
+            "path": "config/settings.json",
+            "label": "{",
+            "start_line": 1,
+            "end_line": 6,
+            "excerpt": "{\n  \"application\": \"ledger-fixture\",\n  \"storage\": \"memory\",\n  \"currency\": \"USD\",\n  \"log_level\": \"INFO\"\n}",
+            "kind": "config",
+            "evidence_id": "e9",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation.validate_payload",
+            "start_line": 8,
+            "end_line": 16,
+            "excerpt": "def validate_payload(payload: dict) -> dict:\n    \"\"\"Require account_id and a positive integer amount in cents.\"\"\"\n    account_id = payload.get(\"account_id\")\n    amount = payload.get(\"amount\")\n    if not isinstance(account_id, str) or not account_id.strip():\n        raise ValidationError(\"account_id must be a nonempty string\")\n    if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:\n        raise ValidationError(\"amount must be a positive integer\")\n    return {\"account_id\": account_id.strip(), \"amount\": amount}",
+            "kind": "code",
+            "evidence_id": "e10",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+            "kind": "code",
+            "evidence_id": "e11",
+            "source_url": null
+          },
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api.create_transfer",
+            "start_line": 6,
+            "end_line": 9,
+            "excerpt": "def create_transfer(payload: dict, service: TransferService) -> dict:\n    \"\"\"Validate incoming transfer data before it reaches the service layer.\"\"\"\n    transfer = validate_payload(payload)\n    return service.transfer(transfer)",
+            "kind": "code",
+            "evidence_id": "e12",
+            "source_url": null
+          }
+        ],
+        "coverage": {
+          "total_files": 14,
+          "included_files": 12,
+          "excluded_files": 2,
+          "parse_failed_files": 0,
+          "passages": 36,
+          "symbols": 19,
+          "reused_embeddings": 0,
+          "supported_bytes": 5165,
+          "synthetic": true,
+          "empty": false,
+          "partial": true,
+          "capabilities": [
+            "exact",
+            "lexical",
+            "semantic",
+            "hybrid"
+          ],
+          "inspected_files": 7
+        }
+      },
+      "created_at": "2026-11-11T06:51:24.460740+00:00",
+      "usage": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 1800,
+          "actual_tokens": 1800,
+          "outcome": "settled",
+          "created_at": "2026-11-11T06:51:25.515572+00:00"
+        }
+      ]
+    },
+    {
+      "label": "held-08",
+      "seconds": 5.407,
+      "schema_version": 1,
+      "id": "a59bdd5a512345b7b126218e19fdf6e7",
+      "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+      "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+      "kind": "question",
+      "question": "Who reviewed the latest open pull request?",
+      "job": {
+        "id": "6554154073064a7c8e95382699871029",
+        "repository_id": "4438f13c79264c4dabe3dd230eb57345",
+        "kind": "question",
+        "status": "succeeded",
+        "stage": "publish",
+        "attempt": 2,
+        "commit_sha": null,
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "checkpoint": {
+          "evidence_count": 12,
+          "effective_mode": "hybrid",
+          "paths": [
+            "README.md",
+            "app/api.py",
+            "app/legacy.py",
+            "app/service.py",
+            "app/storage.py",
+            "app/validation.py",
+            "docs/architecture.rst",
+            "tests/test_transfers.py"
+          ]
+        },
+        "result": {
+          "run_id": "a59bdd5a512345b7b126218e19fdf6e7"
+        },
+        "error": {
+          "code": "provider_unavailable",
+          "message": "Groq is rate-limited or unavailable. The job will retry within its limits.",
+          "retryable": true
+        },
+        "cancel_requested": false,
+        "last_event_id": 12,
+        "heartbeat_at": "2026-11-11T06:51:30.706210+00:00",
+        "retry_at": "2026-11-11T06:51:30.642083+00:00",
+        "created_at": "2026-11-11T06:51:26.804846+00:00",
+        "finished_at": "2026-11-11T06:51:31.586118+00:00"
+      },
+      "config": {
+        "retrieval_mode": "hybrid",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.1
+      },
+      "evidence": [
+        {
+          "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+          "kind": "code",
+          "evidence_id": "e1"
+        },
+        {
+          "source_version_id": "e9f2294271d44b2dbe6dd28cf5718ff4",
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10,
+          "excerpt": "Request flow\n------------\n\nThe request boundary validates a transfer payload, then delegates to the service.\nThe service receives a store as a constructor dependency. The store appends a\ncopy of each transfer and returns a monotonically numbered receipt identifier.\n",
+          "kind": "doc",
+          "evidence_id": "e2"
+        },
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5,
+          "excerpt": "class ValidationError(ValueError):\n    \"\"\"The request does not satisfy the transfer contract.\"\"\"",
+          "kind": "code",
+          "evidence_id": "e3"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12,
+          "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+          "kind": "doc",
+          "evidence_id": "e4"
+        },
+        {
+          "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18,
+          "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+          "kind": "doc",
+          "evidence_id": "e5"
+        },
+        {
+          "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3,
+          "excerpt": "\"\"\"Validation contracts for incoming transfer requests.\"\"\"\n\n",
+          "kind": "code",
+          "evidence_id": "e6"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.__init__",
+          "start_line": 5,
+          "end_line": 6,
+          "excerpt": "    def __init__(self):\n        self.entries = []",
+          "kind": "code",
+          "evidence_id": "e7"
+        },
+        {
+          "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5,
+          "excerpt": "\"\"\"Static example for locating service-level test source.\"\"\"\nfrom app.service import TransferService\nfrom app.storage import LedgerStore\n\n",
+          "kind": "test",
+          "evidence_id": "e8"
+        },
+        {
+          "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8,
+          "excerpt": "def test_receipt_is_returned():\n    result = TransferService(LedgerStore()).transfer({\"account_id\": \"a\", \"amount\": 10})\n    assert result == {\"receipt_id\": \"receipt-1\", \"accepted\": True}",
+          "kind": "test",
+          "evidence_id": "e9"
+        },
+        {
+          "source_version_id": "39d510ef9efc46eb9b7c2d036d36a38d",
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5,
+          "excerpt": "def legacy_receipt() -> str:\n    return \"deprecated\"",
+          "kind": "code",
+          "evidence_id": "e10"
+        },
+        {
+          "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8,
+          "excerpt": "    def __init__(self, store: LedgerStore):\n        self.store = store",
+          "kind": "code",
+          "evidence_id": "e11"
+        },
+        {
+          "source_version_id": "bd3de982fcd748719267f1da56941d24",
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10,
+          "excerpt": "class LedgerStore:\n    def __init__(self):\n        self.entries = []\n\n    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+          "kind": "code",
+          "evidence_id": "e12"
+        }
+      ],
+      "output": {
+        "outcome": "insufficient_evidence",
+        "segments": [],
+        "gaps": [
+          "No evidence about pull requests or reviewers is present in the provided files."
+        ],
+        "limitations": [
+          "The provided evidence only includes source code and documentation of the Ledger API; it does not contain any version control metadata such as pull request information.",
+          "Static source inspection; repository code was not executed."
+        ],
+        "run_id": "a59bdd5a512345b7b126218e19fdf6e7",
+        "kind": "question",
+        "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+        "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+        "citations": [
+          {
+            "source_version_id": "d7d0bc542ec54ae1a2a6629c24e501d0",
+            "path": "app/api.py",
+            "label": "app.api",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"HTTP-independent request boundary for the synthetic Ledger API.\"\"\"\nfrom app.validation import validate_payload\nfrom app.service import TransferService\n\n",
+            "kind": "code",
+            "evidence_id": "e1",
+            "source_url": null
+          },
+          {
+            "source_version_id": "e9f2294271d44b2dbe6dd28cf5718ff4",
+            "path": "docs/architecture.rst",
+            "label": "Request flow",
+            "start_line": 4,
+            "end_line": 10,
+            "excerpt": "Request flow\n------------\n\nThe request boundary validates a transfer payload, then delegates to the service.\nThe service receives a store as a constructor dependency. The store appends a\ncopy of each transfer and returns a monotonically numbered receipt identifier.\n",
+            "kind": "doc",
+            "evidence_id": "e2",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation.ValidationError",
+            "start_line": 4,
+            "end_line": 5,
+            "excerpt": "class ValidationError(ValueError):\n    \"\"\"The request does not satisfy the transfer contract.\"\"\"",
+            "kind": "code",
+            "evidence_id": "e3",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Purpose and architecture",
+            "start_line": 6,
+            "end_line": 12,
+            "excerpt": "## Purpose and architecture\n\nThe Ledger API accepts transfer requests. `app/api.py` is the request boundary.\nIt delegates payload checks to `app/validation.py` before calling\n`TransferService` in `app/service.py`. The service writes through `LedgerStore`\nin `app/storage.py`. The store keeps entries in memory for this fixture.\n",
+            "kind": "doc",
+            "evidence_id": "e4",
+            "source_url": null
+          },
+          {
+            "source_version_id": "ff9aaddcd024445a9f2fb9df96504b0f",
+            "path": "README.md",
+            "label": "Validation",
+            "start_line": 13,
+            "end_line": 18,
+            "excerpt": "## Validation\n\nA request requires a nonempty `account_id` and a positive integer `amount` in\ncents. Booleans are rejected as amounts. Invalid requests raise\n`ValidationError`; no database or external payment gateway is contacted.\n",
+            "kind": "doc",
+            "evidence_id": "e5",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f2c8290b42144c0598371c2395b5f4dc",
+            "path": "app/validation.py",
+            "label": "app.validation",
+            "start_line": 1,
+            "end_line": 3,
+            "excerpt": "\"\"\"Validation contracts for incoming transfer requests.\"\"\"\n\n",
+            "kind": "code",
+            "evidence_id": "e6",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.LedgerStore.__init__",
+            "start_line": 5,
+            "end_line": 6,
+            "excerpt": "    def __init__(self):\n        self.entries = []",
+            "kind": "code",
+            "evidence_id": "e7",
+            "source_url": null
+          },
+          {
+            "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+            "path": "tests/test_transfers.py",
+            "label": "tests.test_transfers",
+            "start_line": 1,
+            "end_line": 5,
+            "excerpt": "\"\"\"Static example for locating service-level test source.\"\"\"\nfrom app.service import TransferService\nfrom app.storage import LedgerStore\n\n",
+            "kind": "test",
+            "evidence_id": "e8",
+            "source_url": null
+          },
+          {
+            "source_version_id": "9dccd1548ae74d808774a4020a2649b4",
+            "path": "tests/test_transfers.py",
+            "label": "tests.test_transfers.test_receipt_is_returned",
+            "start_line": 6,
+            "end_line": 8,
+            "excerpt": "def test_receipt_is_returned():\n    result = TransferService(LedgerStore()).transfer({\"account_id\": \"a\", \"amount\": 10})\n    assert result == {\"receipt_id\": \"receipt-1\", \"accepted\": True}",
+            "kind": "test",
+            "evidence_id": "e9",
+            "source_url": null
+          },
+          {
+            "source_version_id": "39d510ef9efc46eb9b7c2d036d36a38d",
+            "path": "app/legacy.py",
+            "label": "app.legacy.legacy_receipt",
+            "start_line": 4,
+            "end_line": 5,
+            "excerpt": "def legacy_receipt() -> str:\n    return \"deprecated\"",
+            "kind": "code",
+            "evidence_id": "e10",
+            "source_url": null
+          },
+          {
+            "source_version_id": "f17c3037bdd043e1a5ba48a213af9dff",
+            "path": "app/service.py",
+            "label": "app.service.TransferService.__init__",
+            "start_line": 7,
+            "end_line": 8,
+            "excerpt": "    def __init__(self, store: LedgerStore):\n        self.store = store",
+            "kind": "code",
+            "evidence_id": "e11",
+            "source_url": null
+          },
+          {
+            "source_version_id": "bd3de982fcd748719267f1da56941d24",
+            "path": "app/storage.py",
+            "label": "app.storage.LedgerStore",
+            "start_line": 4,
+            "end_line": 10,
+            "excerpt": "class LedgerStore:\n    def __init__(self):\n        self.entries = []\n\n    def append_transfer(self, payload: dict) -> str:\n        self.entries.append(dict(payload))\n        return f\"receipt-{len(self.entries)}\"",
+            "kind": "code",
+            "evidence_id": "e12",
+            "source_url": null
+          }
+        ],
+        "coverage": {
+          "total_files": 14,
+          "included_files": 12,
+          "excluded_files": 2,
+          "parse_failed_files": 0,
+          "passages": 36,
+          "symbols": 19,
+          "reused_embeddings": 0,
+          "supported_bytes": 5165,
+          "synthetic": true,
+          "empty": false,
+          "partial": true,
+          "capabilities": [
+            "exact",
+            "lexical",
+            "semantic",
+            "hybrid"
+          ],
+          "inspected_files": 8
+        }
+      },
+      "created_at": "2026-11-11T06:51:26.809533+00:00",
+      "usage": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 9200,
+          "actual_tokens": null,
+          "outcome": "unknown",
+          "created_at": "2026-11-11T06:51:27.436085+00:00"
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "reserved_tokens": 1717,
+          "actual_tokens": 1717,
+          "outcome": "settled",
+          "created_at": "2026-11-11T06:51:30.782736+00:00"
+        }
+      ]
+    }
+  ],
+  "real_repository": {
+    "name": "pallets/itsdangerous",
+    "requested_ref": "2.2.0",
+    "commit_sha": "096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+    "coverage": {
+      "total_files": 60,
+      "included_files": 41,
+      "excluded_files": 19,
+      "parse_failed_files": 0,
+      "passages": 297,
+      "symbols": 145,
+      "reused_embeddings": 0,
+      "supported_bytes": 101168,
+      "synthetic": false,
+      "empty": false,
+      "partial": true,
+      "capabilities": [
+        "exact",
+        "lexical",
+        "semantic",
+        "hybrid"
+      ]
+    },
+    "import_seconds": 23.091,
+    "license": "BSD-3-Clause",
+    "license_url": "https://raw.githubusercontent.com/pallets/itsdangerous/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd/LICENSE.txt",
+    "search_checks": [
+      {
+        "mode": "exact",
+        "query": "unsign",
+        "snapshot_id": "c8ef6e57a6d647c5bbe4242ca37135a6",
+        "first_result": {
+          "path": "src/itsdangerous/signer.py",
+          "label": "src.itsdangerous.signer.Signer.unsign",
+          "start_line": 244,
+          "end_line": 256,
+          "source_url": "https://github.com/pallets/itsdangerous/blob/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd/src/itsdangerous/signer.py#L244-L256"
+        },
+        "source_excerpt_matches": true
+      },
+      {
+        "mode": "lexical",
+        "query": "signature",
+        "snapshot_id": "c8ef6e57a6d647c5bbe4242ca37135a6",
+        "first_result": {
+          "path": "src/itsdangerous/signer.py",
+          "label": "src.itsdangerous.signer.Signer",
+          "start_line": 225,
+          "end_line": 266,
+          "source_url": "https://github.com/pallets/itsdangerous/blob/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd/src/itsdangerous/signer.py#L225-L266"
+        },
+        "source_excerpt_matches": true
+      },
+      {
+        "mode": "semantic",
+        "query": "reject a tampered signature",
+        "snapshot_id": "c8ef6e57a6d647c5bbe4242ca37135a6",
+        "first_result": {
+          "path": "src/itsdangerous/signer.py",
+          "label": "src.itsdangerous.signer.Signer.unsign",
+          "start_line": 244,
+          "end_line": 256,
+          "source_url": "https://github.com/pallets/itsdangerous/blob/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd/src/itsdangerous/signer.py#L244-L256"
+        },
+        "source_excerpt_matches": true
+      },
+      {
+        "mode": "hybrid",
+        "query": "reject a tampered signature",
+        "snapshot_id": "c8ef6e57a6d647c5bbe4242ca37135a6",
+        "first_result": {
+          "path": "src/itsdangerous/signer.py",
+          "label": "src.itsdangerous.signer.Signer",
+          "start_line": 225,
+          "end_line": 266,
+          "source_url": "https://github.com/pallets/itsdangerous/blob/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd/src/itsdangerous/signer.py#L225-L266"
+        },
+        "source_excerpt_matches": true
+      }
+    ]
+  }
+}
