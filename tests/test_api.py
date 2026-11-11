@@ -103,3 +103,14 @@ def test_invalid_inputs_are_structured(client):
     response = client.post("/v1/repositories", json={"github_repository": "a/b", "unexpected": True})
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "invalid_input"
+
+
+def test_chunked_request_size_is_bounded(client):
+    def chunks():
+        yield b'{"github_repository":"'
+        yield b"x" * 20000
+        yield b'"}'
+
+    response = client.post("/v1/repositories", content=chunks(), headers={"Content-Type": "application/json"})
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "request_too_large"

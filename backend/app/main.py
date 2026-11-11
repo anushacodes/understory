@@ -18,6 +18,7 @@ from app.connectors import canonical_repository
 from app.db import SessionLocal, engine, get_session
 from app.errors import AppError
 from app.jobs import TERMINAL, emit, enqueue, ready_snapshot, repository
+from app.middleware import BodyLimitMiddleware
 from app.models import (
     AnswerRun,
     Embedding,
@@ -43,6 +44,7 @@ app.add_middleware(
     expose_headers=["X-Request-ID"],
 )
 bearer = HTTPBearer(auto_error=False)
+app.add_middleware(BodyLimitMiddleware)
 
 
 def owner(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]):
@@ -63,18 +65,6 @@ Key = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=20
 @app.middleware("http")
 async def request_id(request: Request, call_next):
     request.state.request_id = uuid4().hex
-    if int(request.headers.get("content-length", "0")) > 16384:
-        return JSONResponse(
-            {
-                "error": {
-                    "code": "request_too_large",
-                    "message": "Request exceeds 16 KiB.",
-                    "retryable": False,
-                },
-                "request_id": request.state.request_id,
-            },
-            status_code=413,
-        )
     response = await call_next(request)
     response.headers["X-Request-ID"] = request.state.request_id
     return response
@@ -188,7 +178,7 @@ def ready():
     try:
         with engine.connect() as connection:
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if revision != "0002":
+        if revision != "0004":
             return JSONResponse({"status": "unavailable"}, status_code=503)
         return {"status": "ready"}
     except SQLAlchemyError:
@@ -611,4 +601,4 @@ def purge(repository_id: str, identity: Owner, session: DB):
 def run():
     import uvicorn
 
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=settings.api_port, access_log=False)
