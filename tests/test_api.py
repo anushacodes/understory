@@ -19,6 +19,7 @@ def imported(client, config):
 def test_owner_authorization_and_resource_scope(client):
     client.headers.pop("Authorization")
     assert client.get("/v1/repositories").status_code == 401
+    assert client.get("/v1/repositories", headers={b"authorization": b"Bearer \xff"}).status_code == 401
     assert client.get("/v1/health").json() == {"status": "ok"}
     client.headers["Authorization"] = "Bearer test-owner-token"
     with SessionLocal.begin() as session:

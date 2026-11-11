@@ -1,9 +1,12 @@
 import asyncio
 import hmac
 import json
+from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from fastapi import Depends, FastAPI, Header, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +33,7 @@ from app.models import (
     SnapshotFile,
     SourceVersion,
     Symbol,
+    UsageEvent,
     WorkerPresence,
 )
 from app.retrieval import search, source_url
@@ -51,7 +55,7 @@ def owner(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(be
     if (
         not settings.owner_token
         or not credentials
-        or not hmac.compare_digest(credentials.credentials, settings.owner_token)
+        or not hmac.compare_digest(credentials.credentials.encode(), settings.owner_token.encode())
     ):
         raise AppError("unauthorized", "Enter the owner token configured in the server's .env file.", 401)
     return "owner"
@@ -178,7 +182,10 @@ def ready():
     try:
         with engine.connect() as connection:
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if revision != "0004":
+        root = Path(__file__).resolve().parents[2]
+        config = Config(str(root / "alembic.ini"))
+        config.set_main_option("script_location", str(root / "migrations"))
+        if revision != ScriptDirectory.from_config(config).get_current_head():
             return JSONResponse({"status": "unavailable"}, status_code=503)
         return {"status": "ready"}
     except SQLAlchemyError:
@@ -206,6 +213,7 @@ def register(body: RepositoryInput, identity: Owner, session: DB):
             "repository_not_allowed",
             "Add this public repository to ALLOWED_REPOSITORIES in the server's .env file before importing it.",
         )
+    session.execute(text("SELECT pg_advisory_xact_lock(781341001)"))
     existing = session.scalar(
         select(Repository).where(Repository.owner_scope == identity, Repository.name == name)
     )
@@ -505,7 +513,22 @@ def get_run(run_id: str, identity: Owner, session: DB):
 @app.get("/v1/runs/{run_id}/export")
 def export_run(run_id: str, identity: Owner, session: DB):
     result = run_result(session, run_id)
-    return {"schema_version": 1, **result}
+    usage = session.scalars(select(UsageEvent).where(UsageEvent.job_id == result["job"]["id"])).all()
+    return {
+        "schema_version": 1,
+        **result,
+        "usage": [
+            {
+                "provider": item.provider,
+                "model": item.model,
+                "reserved_tokens": item.reserved_tokens,
+                "actual_tokens": item.actual_tokens,
+                "outcome": item.outcome,
+                "created_at": item.created_at,
+            }
+            for item in usage
+        ],
+    }
 
 
 @app.get("/v1/jobs/{job_id}")
@@ -540,9 +563,9 @@ async def events(
     except ValueError as exc:
         raise AppError("invalid_event_cursor", "Last-Event-ID must be a nonnegative event sequence.") from exc
     with SessionLocal() as session:
-        get_job(session, job_id)
+        job = get_job(session, job_id)
         first = session.scalar(select(func.min(JobEvent.sequence)).where(JobEvent.job_id == job_id))
-        if after and first and after < first - 1:
+        if (first is not None and after < first - 1) or (first is None and after < job.event_sequence):
             raise AppError(
                 "event_history_expired", "Reload job state to reset the expired event cursor.", 410
             )
