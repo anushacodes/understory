@@ -6,7 +6,7 @@ from pathlib import Path
 
 import httpx
 
-from app.errors import AppError
+from app.errors import AppError, retry_delay
 from app.jobs import digest
 
 
@@ -32,7 +32,12 @@ def embedding_identity(config) -> dict:
         raise AppError(
             "invalid_embedding_provider", "Supported embedding providers are disabled and fastembed."
         )
-    model = local_model(config.embedding_model, str(config.model_cache))
+    return dict(_local_identity(config.embedding_model, str(config.model_cache)))
+
+
+@lru_cache(maxsize=2)
+def _local_identity(model_name: str, model_cache: str) -> dict:
+    model = local_model(model_name, model_cache)
     # Fingerprint actual local model and tokenizer assets, not an assumed mutable model name.
     implementation = model.model
     directory = Path(implementation._model_dir)
@@ -45,7 +50,7 @@ def embedding_identity(config) -> dict:
                     fingerprint.update(chunk)
     return {
         "provider": "fastembed",
-        "model": config.embedding_model,
+        "model": model_name,
         "fastembed": version("fastembed"),
         "asset_digest": fingerprint.hexdigest(),
         "dimensions": model.embedding_size,
@@ -127,6 +132,7 @@ def generate(question: str, evidence: list[dict], config) -> tuple[dict, int | N
                 "Groq is rate-limited or unavailable. The job will retry within its limits.",
                 503,
                 True,
+                retry_after=retry_delay(response.headers),
             )
         if response.status_code == 404:
             raise AppError(

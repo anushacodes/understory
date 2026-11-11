@@ -8,7 +8,7 @@ from app.errors import AppError
 from app.indexing import identifier_text
 from app.jobs import ready_snapshot
 from app.models import Embedding, Passage, Repository, SnapshotFile, SourceVersion
-from app.providers import embed
+from app.providers import embed, embedding_identity
 
 
 def source_url(name: str, sha: str, path: str, start: int, end: int) -> str | None:
@@ -130,6 +130,12 @@ def search(
                 raise AppError(
                     "embedding_unavailable",
                     "This snapshot does not have a compatible local semantic index. Use lexical search or reimport with embeddings enabled.",
+                    503,
+                )
+            if identity != embedding_identity(config):
+                raise AppError(
+                    "embedding_configuration_mismatch",
+                    "The local model assets or preprocessing differ from this snapshot. Use lexical search or reimport with the current model.",
                     503,
                 )
             vector = embed([query], config, query=True)[0]
