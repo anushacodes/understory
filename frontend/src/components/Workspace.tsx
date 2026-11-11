@@ -197,6 +197,7 @@ export function Workspace({
   });
 
   function chooseRepository(id: string) {
+    if (id === repoId) return;
     sourceRequest.current?.abort();
     setRepoId(id);
     setSnapshotId('');
@@ -263,6 +264,7 @@ export function Workspace({
       localStorage.setItem(`understory-run-${repoId}`, next.id);
       if (next.output?.citations[0])
         void openFile(next.output.citations[0].path, next.output.citations[0], next.snapshot_id);
+      setMobilePane('question');
     } catch (error) {
       setError(errorText(error));
     }
