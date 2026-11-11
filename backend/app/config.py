@@ -9,6 +9,7 @@ load_dotenv()
 
 @dataclass(frozen=True)
 class Settings:
+    api_port: int = field(default_factory=lambda: int(os.getenv("API_PORT", "8017")))
     database_url: str = field(
         default_factory=lambda: os.getenv(
             "DATABASE_URL", "postgresql+psycopg://understory:understory@127.0.0.1:54329/understory"
@@ -34,7 +35,7 @@ class Settings:
     model_cache: Path = field(default_factory=lambda: Path(os.getenv("MODEL_CACHE_DIR", ".cache/models")))
     generation_provider: str = field(default_factory=lambda: os.getenv("GENERATION_PROVIDER", "disabled"))
     generation_model: str = field(
-        default_factory=lambda: os.getenv("GENERATION_MODEL", "llama-3.3-70b-versatile")
+        default_factory=lambda: os.getenv("GENERATION_MODEL", "openai/gpt-oss-120b")
     )
     groq_api_key: str = field(default_factory=lambda: os.getenv("GROQ_API_KEY", ""))
     github_token: str = field(default_factory=lambda: os.getenv("GITHUB_TOKEN", ""))

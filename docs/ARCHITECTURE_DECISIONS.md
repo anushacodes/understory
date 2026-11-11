@@ -152,6 +152,8 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Interview explanation.** Separate embedding and generation workloads, data transmission and operating costs. The architecture does not require them to use the same vendor.
 
+**Revision during implementation.** The initially proposed `llama-3.3-70b-versatile` returned `404 model_not_found` for the configured account. The authenticated model-list endpoint showed `openai/gpt-oss-120b`, so the default was changed to that accessible model, with low reasoning effort and the existing bounded-output contract. This was an availability correction based on a real API response, not a benchmark proving one model superior. Model-list visibility still requires a real inference check.
+
 ## ADR-10 — Key vector reuse by actual input and effective model identity
 
 **Problem.** The same model name can refer to changed assets, and the same source bytes can have different embedded path/symbol headers. Reusing incompatible vectors silently corrupts retrieval.

@@ -109,6 +109,8 @@ def generate(question: str, evidence: list[dict], config) -> tuple[dict, int | N
         "max_completion_tokens": 1200,
         "response_format": {"type": "json_object"},
     }
+    if config.generation_model.startswith("openai/gpt-oss"):
+        body["reasoning_effort"] = "low"
     # UTF-8 bytes conservatively upper-bound byte-BPE tokens, including message overhead.
     if len(json.dumps(body, ensure_ascii=False).encode()) + 256 > 8000:
         raise AppError("context_budget", "Assembled source context exceeds the configured generation budget.")
@@ -125,6 +127,16 @@ def generate(question: str, evidence: list[dict], config) -> tuple[dict, int | N
                 "Groq is rate-limited or unavailable. The job will retry within its limits.",
                 503,
                 True,
+            )
+        if response.status_code == 404:
+            raise AppError(
+                "model_unavailable",
+                "The configured Groq model is unavailable for this account. Choose an accessible model in GENERATION_MODEL.",
+                503,
+            )
+        if response.status_code in {401, 403}:
+            raise AppError(
+                "provider_credentials", "Groq rejected the server-side credential or model permissions.", 503
             )
         if response.status_code != 200:
             raise AppError(
