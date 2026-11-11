@@ -10,7 +10,7 @@ from app.connectors import connector, safe_archive
 from app.db import SessionLocal
 from app.errors import AppError, Cancelled, LostLease
 from app.indexing import content_hash, parse
-from app.jobs import checkpoint, claim, digest, emit, guard, heartbeat, settle_error
+from app.jobs import checkpoint, claim, digest, emit, guard, heartbeat, settle_error, worker_presence
 from app.models import (
     AnswerRun,
     Embedding,
@@ -49,6 +49,7 @@ class Lease:
         while not self.stop.wait(self.config.heartbeat_seconds):
             try:
                 heartbeat(self.job_id, self.token, self.config)
+                worker_presence()
             except Exception as exc:
                 self.error = exc
                 break
@@ -538,6 +539,7 @@ def main():
     logger.info("Worker started; waiting for durable jobs")
     while not stop.is_set():
         try:
+            worker_presence()
             worked = run_once()
         except Exception as exc:
             logger.error("Worker polling failed: %s", type(exc).__name__)

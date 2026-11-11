@@ -7,7 +7,7 @@ from sqlalchemy import and_, func, or_, select, text
 from app.config import settings
 from app.db import SessionLocal
 from app.errors import AppError, Cancelled, LostLease
-from app.models import AnswerRun, Job, JobEvent, Repository, Snapshot
+from app.models import AnswerRun, Job, JobEvent, Repository, Snapshot, WorkerPresence
 
 TERMINAL = {"succeeded", "failed", "cancelled"}
 
@@ -158,7 +158,9 @@ def claim(config=settings) -> tuple[str, int] | None:
 
 
 def guard(session, job_id: str, token: int, *, check_cancel: bool = True) -> Job:
-    job = session.scalar(select(Job).where(Job.id == job_id).with_for_update())
+    job = session.scalar(
+        select(Job).where(Job.id == job_id).with_for_update().execution_options(populate_existing=True)
+    )
     now = session.scalar(select(func.now()))
     if (
         not job
@@ -179,6 +181,18 @@ def heartbeat(job_id: str, token: int, config=settings):
         now = session.scalar(select(func.now()))
         job.heartbeat_at = now
         job.lease_until = now + timedelta(seconds=config.lease_seconds)
+
+
+def worker_presence(worker_id: str = "local"):
+    from sqlalchemy.dialects.postgresql import insert
+
+    with SessionLocal.begin() as session:
+        now = session.scalar(select(func.now()))
+        session.execute(
+            insert(WorkerPresence)
+            .values(id=worker_id, observed_at=now)
+            .on_conflict_do_update(index_elements=[WorkerPresence.id], set_={"observed_at": now})
+        )
 
 
 def checkpoint(job_id: str, token: int, stage: str, **values):

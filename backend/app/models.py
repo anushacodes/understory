@@ -29,6 +29,12 @@ class Base(DeclarativeBase):
     pass
 
 
+class WorkerPresence(Base):
+    __tablename__ = "worker_presence"
+    id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class Repository(Base):
     __tablename__ = "repositories"
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=uid)
