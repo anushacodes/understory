@@ -715,7 +715,8 @@ button:hover:not(:disabled) {
   border-radius: 9px;
   flex-shrink: 0;
 }
-.segmented button {
+.segmented button,
+.segmented .mode-label {
   display: flex;
   gap: 5px;
   align-items: center;
@@ -1934,7 +1935,8 @@ button:hover:not(:disabled) {
   .source-controls {
     gap: 7px;
   }
-  .source-controls .segmented button {
+  .source-controls .segmented button,
+  .source-controls .segmented .mode-label {
     padding: 0 9px;
     font-size: 11px;
   }

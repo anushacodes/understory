@@ -57,8 +57,11 @@ test('reload restores a queued import and reports the stopped worker', async ({
     await page.getByRole('button', { name: 'Cancel job', exact: true }).click();
     await expect(page.locator('.job-panel')).toContainText('cancelled');
   } finally {
-    if (jobId)
-      await request.post(`http://127.0.0.1:8017/v1/jobs/${jobId}/cancel`, { headers, data: {} });
-    process.kill(workerPid, 'SIGCONT');
+    try {
+      if (jobId)
+        await request.post(`http://127.0.0.1:8017/v1/jobs/${jobId}/cancel`, { headers, data: {} });
+    } finally {
+      process.kill(workerPid, 'SIGCONT');
+    }
   }
 });

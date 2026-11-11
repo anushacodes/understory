@@ -118,9 +118,9 @@ export function SourceViewer({
       </div>
       <div className="source-controls">
         <div className="segmented">
-          <button className="active" aria-current="page">
+          <span className="active mode-label">
             <Icon name="code" size={13} /> Code
-          </button>
+          </span>
         </div>
         <div className="segmented" role="group" aria-label="Source lines">
           <button
