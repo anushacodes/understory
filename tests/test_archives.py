@@ -75,6 +75,14 @@ def test_entry_and_decompression_budgets(config):
             safe_archive(payload, restricted)
 
 
+def test_tar_metadata_and_compressed_bytes_are_bounded(config):
+    payload = archive([("root/a.py", b"x=1", tarfile.REGTYPE)])
+    with pytest.raises(AppError):
+        safe_archive(payload, replace(config, max_archive_bytes=1))
+    with pytest.raises(AppError):
+        safe_archive(payload, replace(config, max_extracted_bytes=1, max_entries=1))
+
+
 @pytest.mark.parametrize(
     "name", ["https://evil.example/a/b", "../escape", "a/b/c", "a/..", "file:///tmp/source"]
 )

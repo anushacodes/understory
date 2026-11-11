@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import io
 import json
@@ -9,7 +10,7 @@ from urllib.parse import quote
 
 import httpx
 
-from app.errors import AppError
+from app.errors import AppError, retry_delay
 from app.indexing import classify
 
 
@@ -39,7 +40,13 @@ def safe_archive(data: bytes, config) -> list[File]:
     total = included = count = 0
     seen = set()
     try:
-        archive = tarfile.open(fileobj=io.BytesIO(data), mode="r:gz")
+        # Bound the raw tar before tarfile can allocate oversized PAX/long-name metadata.
+        raw_cap = config.max_extracted_bytes + config.max_entries * 2048
+        with gzip.GzipFile(fileobj=io.BytesIO(data)) as compressed:
+            raw_tar = compressed.read(raw_cap + 1)
+        if len(raw_tar) > raw_cap:
+            raise AppError("archive_size_limit", "Expanded archive and metadata exceed their budget.")
+        archive = tarfile.open(fileobj=io.BytesIO(raw_tar), mode="r:")
         with archive:
             root = None
             for member in archive:
@@ -54,6 +61,7 @@ def safe_archive(data: bytes, config) -> list[File]:
                     or any(p in {"..", "."} for p in parts)
                     or not parts
                     or len(parts) > 21
+                    or len(raw.encode()) > 4096
                     or "\x00" in raw
                 ):
                     raise AppError("unsafe_archive", "Repository archive contains an unsafe path.")
@@ -62,6 +70,8 @@ def safe_archive(data: bytes, config) -> list[File]:
                 if parts[0] != root:
                     raise AppError("unsafe_archive", "Repository archive must have one root directory.")
                 if member.isdir():
+                    if member.size:
+                        raise AppError("unsafe_archive", "Directory entries cannot contain file payloads.")
                     continue
                 if not member.isfile() or len(parts) < 2:
                     raise AppError("unsafe_archive", "Links and special archive entries are unsupported.")
@@ -103,8 +113,12 @@ class GitHubConnector:
     def __init__(self, config):
         self.config = config
         self.calls = 0
+        self.on_request = None
+        self.provider_id = None
 
     def request(self, path: str, *, archive=False):
+        if self.on_request:
+            self.on_request()
         self.calls += 1
         if self.calls > 20:
             raise AppError("github_budget", "GitHub request budget exhausted.")
@@ -127,6 +141,7 @@ class GitHubConnector:
                             "GitHub is rate-limited or temporarily unavailable.",
                             503,
                             True,
+                            retry_after=retry_delay(response.headers),
                         )
                     if response.status_code != 200:
                         raise AppError(
@@ -149,6 +164,7 @@ class GitHubConnector:
 
     def resolve(self, name: str, ref: str) -> str:
         repo = self.request(f"/repos/{name}")
+        self.provider_id = str(repo.get("id", ""))
         if repo.get("private") or repo.get("full_name", "").lower() != name:
             raise AppError(
                 "unsupported_repository", "Only the canonical public allowlisted repository can be imported."
@@ -172,6 +188,7 @@ class FixtureConnector:
 
     def __init__(self, config):
         self.config = config
+        self.provider_id = "synthetic:understory/fixture"
 
     def sources(self, ref: str) -> dict[str, bytes]:
         directory = self.root / ("snapshot_b" if ref.lower() in {"b", "snapshot-b"} else "snapshot_a")
