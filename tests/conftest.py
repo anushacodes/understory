@@ -2,9 +2,10 @@ from dataclasses import replace
 from uuid import uuid4
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from app.config import settings
 from app.db import SessionLocal
-from app.models import Base
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import close_all_sessions
@@ -21,7 +22,11 @@ def database():
     engine = create_engine(
         settings.database_url, connect_args={"options": f"-csearch_path={schema},public"}
     ).execution_options(schema_translate_map={None: schema})
-    Base.metadata.create_all(engine)
+    migration_config = Config("alembic.ini")
+    migration_config.attributes["version_table_schema"] = schema
+    with engine.begin() as connection:
+        migration_config.attributes["connection"] = connection
+        command.upgrade(migration_config, "head")
     SessionLocal.configure(bind=engine)
     yield engine
     close_all_sessions()
