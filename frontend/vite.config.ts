@@ -6,6 +6,6 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    proxy: { '/v1': 'http://127.0.0.1:8000' },
+    proxy: { '/v1': process.env.UNDERSTORY_API_URL ?? 'http://127.0.0.1:8017' },
   },
 });

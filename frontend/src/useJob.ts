@@ -32,7 +32,11 @@ export function useJob(jobId: string | null, onTerminal?: (job: Job) => void) {
           void refresh().catch(() => {});
         });
       } catch (error) {
-        if (error instanceof ApiError && error.status === 410) after = 0;
+        if (error instanceof ApiError && error.status === 410) {
+          const current = await api<Job>(`/jobs/${jobId}`, { signal: controller.signal });
+          after = current.last_event_id;
+          await refresh();
+        }
       }
       if (!stopped && !terminal) timer = setTimeout(reconnect, 1500);
     };

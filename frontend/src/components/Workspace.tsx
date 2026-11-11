@@ -19,6 +19,10 @@ import { Icon, Wordmark } from './Icon';
 import { SourceViewer } from './SourceViewer';
 
 type Mode = 'overview' | 'ask' | 'search' | 'history';
+const repositoryQuery = (value: string) =>
+  /^(?:https:\/\/github\.com\/)?[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9_.-]{1,100}\/?$/.test(
+    value.trim(),
+  );
 const errorText = (error: unknown) =>
   error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 
@@ -49,7 +53,7 @@ export function Workspace({
   const [expanded, setExpanded] = useState(false);
   const [mobilePane, setMobilePane] = useState('question');
   const [mode, setMode] = useState<Mode>('overview');
-  const [question, setQuestion] = useState(initialQuery.includes('/') ? '' : initialQuery);
+  const [question, setQuestion] = useState(repositoryQuery(initialQuery) ? '' : initialQuery);
   const [query, setQuery] = useState('');
   const [searchMode, setSearchMode] = useState('lexical');
   const [sourceKind, setSourceKind] = useState('');
@@ -60,9 +64,9 @@ export function Workspace({
   const [jobId, setJobId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showImport, setShowImport] = useState(false);
+  const [showImport, setShowImport] = useState(repositoryQuery(initialQuery));
   const [importName, setImportName] = useState(
-    initialQuery.includes('/') ? initialQuery : 'understory/fixture',
+    repositoryQuery(initialQuery) ? initialQuery : 'understory/fixture',
   );
   const [importRef, setImportRef] = useState('main');
   const [collapsed, setCollapsed] = useState(false);
@@ -78,7 +82,19 @@ export function Workspace({
     allPages<Repository>('/repositories', controller.signal)
       .then((items) => {
         setRepositories(items);
-        if (items.length)
+        const requestedName = initialQuery
+          .trim()
+          .replace(/^https:\/\/github\.com\//, '')
+          .replace(/\/$/, '')
+          .replace(/\.git$/, '')
+          .toLowerCase();
+        const requested = repositoryQuery(initialQuery)
+          ? items.find((item) => item.name === requestedName)
+          : null;
+        if (requested) {
+          setRepoId(requested.id);
+          setShowImport(false);
+        } else if (items.length)
           setRepoId((current) =>
             items.some((item) => item.id === current) ? current : items[0].id,
           );
@@ -114,7 +130,20 @@ export function Workspace({
       .catch((error) => {
         if (!controller.signal.aborted) setError(errorText(error));
       });
-    return () => controller.abort();
+    const timer = setInterval(() => {
+      api<Repository>(`/repositories/${repoId}`, { signal: controller.signal })
+        .then((updated) => {
+          if (!controller.signal.aborted)
+            setRepositories((items) =>
+              items.map((item) => (item.id === updated.id ? updated : item)),
+            );
+        })
+        .catch(() => {});
+    }, 10000);
+    return () => {
+      clearInterval(timer);
+      controller.abort();
+    };
   }, [repoId]);
 
   useEffect(() => {
@@ -572,6 +601,7 @@ export function Workspace({
           {job && (
             <JobPanel
               job={job}
+              workerAvailable={repo?.worker?.available}
               cancel={async () => {
                 await post(`/jobs/${job.id}/cancel`, {});
               }}
@@ -945,7 +975,15 @@ export function Workspace({
   );
 }
 
-function JobPanel({ job, cancel }: { job: Job; cancel: () => Promise<void> }) {
+function JobPanel({
+  job,
+  cancel,
+  workerAvailable,
+}: {
+  job: Job;
+  cancel: () => Promise<void>;
+  workerAvailable?: boolean;
+}) {
   const pending = !['succeeded', 'failed', 'cancelled'].includes(job.status);
   const [error, setError] = useState<string | null>(null);
   return (
@@ -979,7 +1017,12 @@ function JobPanel({ job, cancel }: { job: Job; cancel: () => Promise<void> }) {
         <p>{String(job.checkpoint.evidence_count)} source excerpts inspected</p>
       )}
       {job.status === 'queued' && (
-        <p>Waiting for the local worker. Progress is saved if you leave this page.</p>
+        <p>
+          {workerAvailable === false
+            ? 'Local worker is offline. Start understory-worker to continue.'
+            : 'Waiting for an available worker slot.'}{' '}
+          Progress is saved if you leave this page.
+        </p>
       )}
       {job.error && <p className="job-error">{job.error.message}</p>}
       {error && <p>{error}</p>}

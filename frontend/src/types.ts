@@ -20,6 +20,7 @@ export type Repository = {
   coverage: Coverage | null;
   synthetic: boolean;
   jobs?: Job[];
+  worker?: { available: boolean; heartbeat_at: string | null };
 };
 export type Snapshot = {
   id: string;
