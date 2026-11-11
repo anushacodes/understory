@@ -1,0 +1,1829 @@
+{
+  "generated_at": "2026-11-11T06:28:52.233287+00:00",
+  "corpus": "synthetic fixture A",
+  "commit_sha": "8276c4f25eeecf58844241bb1ca875e5c707801f",
+  "snapshot_id": "0122592eebd94c61a181eb1a7c93a818",
+  "configuration": {
+    "parser": "python-ast-doc-lines-v1",
+    "chunker": "structural-lines-v1",
+    "classifier": "source-policy-v1",
+    "embedding_provider": "fastembed",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding": {
+      "provider": "fastembed",
+      "model": "BAAI/bge-small-en-v1.5",
+      "fastembed": "0.9.1",
+      "asset_digest": "65fa9b555f6efb7f272e48d38fca7e1805a62077b4d87d6fb87616e07ae50449",
+      "dimensions": 384,
+      "preprocessing": "passage-query-v1"
+    }
+  },
+  "coverage": {
+    "total_files": 14,
+    "included_files": 12,
+    "excluded_files": 2,
+    "parse_failed_files": 0,
+    "passages": 36,
+    "symbols": 19,
+    "reused_embeddings": 0,
+    "supported_bytes": 5165,
+    "synthetic": true,
+    "empty": false,
+    "partial": true,
+    "capabilities": [
+      "exact",
+      "lexical",
+      "semantic",
+      "hybrid"
+    ]
+  },
+  "questions_sha256": "b6bbf4bd4772c73a603928449579e4e97c9800d5fe1d168cb592540238ae7a9a",
+  "split": "held_out",
+  "environment": {
+    "python": "3.12.15",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64"
+  },
+  "method": "One pass per mode in fixed order. First semantic query includes cold model initialization; small sample sizes. Relevance is path plus overlapping labeled original range. Unanswerable questions excluded from Recall/MRR and reported individually.",
+  "summary": {
+    "exact": {
+      "answerable_questions": 6,
+      "recall_at_5": 0.16666666666666666,
+      "mrr_at_10": 0.16666666666666666,
+      "latency_p50_ms": 1.8335,
+      "latency_p95_ms": 9.615,
+      "latency_samples": 8
+    },
+    "lexical": {
+      "answerable_questions": 6,
+      "recall_at_5": 0.8333333333333334,
+      "mrr_at_10": 0.75,
+      "latency_p50_ms": 5.1815,
+      "latency_p95_ms": 8.032,
+      "latency_samples": 8
+    },
+    "semantic": {
+      "answerable_questions": 6,
+      "recall_at_5": 1.0,
+      "mrr_at_10": 0.875,
+      "latency_p50_ms": 11.685,
+      "latency_p95_ms": 836.073,
+      "latency_samples": 8
+    },
+    "hybrid": {
+      "answerable_questions": 6,
+      "recall_at_5": 1.0,
+      "mrr_at_10": 0.8666666666666667,
+      "latency_p50_ms": 13.6965,
+      "latency_p95_ms": 17.18,
+      "latency_samples": 8
+    }
+  },
+  "queries": [
+    {
+      "question_id": "held-01",
+      "query": "ValidationError",
+      "category": "identifier",
+      "mode": "exact",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 9.615,
+      "relevance": [
+        {
+          "path": "app/validation.py",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-02",
+      "query": "Where is a copy of each accepted transfer kept?",
+      "category": "conceptual",
+      "mode": "exact",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.0,
+      "latency_ms": 2.044,
+      "relevance": [
+        {
+          "path": "app/storage.py",
+          "start_line": 8,
+          "end_line": 10
+        }
+      ],
+      "results": []
+    },
+    {
+      "question_id": "held-03",
+      "query": "What normalizes display label whitespace without changing case?",
+      "category": "conceptual",
+      "mode": "exact",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.0,
+      "latency_ms": 1.759,
+      "relevance": [
+        {
+          "path": "app/formatting.py",
+          "start_line": 1,
+          "end_line": 3
+        }
+      ],
+      "results": []
+    },
+    {
+      "question_id": "held-04",
+      "query": "How do tests assert an accepted receipt is returned?",
+      "category": "tests",
+      "mode": "exact",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.0,
+      "latency_ms": 1.403,
+      "relevance": [
+        {
+          "path": "tests/test_transfers.py",
+          "start_line": 6,
+          "end_line": 8
+        }
+      ],
+      "results": []
+    },
+    {
+      "question_id": "held-05",
+      "query": "Will stored transfers survive a process restart?",
+      "category": "documentation",
+      "mode": "exact",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.0,
+      "latency_ms": 1.338,
+      "relevance": [
+        {
+          "path": "docs/architecture.rst",
+          "start_line": 11,
+          "end_line": 15
+        }
+      ],
+      "results": []
+    },
+    {
+      "question_id": "held-06",
+      "query": "What is the project name and required Python version?",
+      "category": "config",
+      "mode": "exact",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.0,
+      "latency_ms": 1.908,
+      "relevance": [
+        {
+          "path": "pyproject.toml",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ],
+      "results": []
+    },
+    {
+      "question_id": "held-07",
+      "query": "What is the production encryption key value?",
+      "category": "unanswerable",
+      "mode": "exact",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 1.303,
+      "relevance": [],
+      "results": []
+    },
+    {
+      "question_id": "held-08",
+      "query": "Who reviewed the latest open pull request?",
+      "category": "unanswerable",
+      "mode": "exact",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 2.662,
+      "relevance": [],
+      "results": []
+    },
+    {
+      "question_id": "held-01",
+      "query": "ValidationError",
+      "category": "identifier",
+      "mode": "lexical",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 0.3333333333333333,
+      "latency_ms": 7.109,
+      "relevance": [
+        {
+          "path": "app/validation.py",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_zero_amount_rejected",
+          "start_line": 9,
+          "end_line": 14
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        }
+      ]
+    },
+    {
+      "question_id": "held-02",
+      "query": "Where is a copy of each accepted transfer kept?",
+      "category": "conceptual",
+      "mode": "lexical",
+      "recall_at_5": 0.0,
+      "mrr_at_10": 0.16666666666666666,
+      "latency_ms": 8.032,
+      "relevance": [
+        {
+          "path": "app/storage.py",
+          "start_line": 8,
+          "end_line": 10
+        }
+      ],
+      "results": [
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-03",
+      "query": "What normalizes display label whitespace without changing case?",
+      "category": "conceptual",
+      "mode": "lexical",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 5.424,
+      "relevance": [
+        {
+          "path": "app/formatting.py",
+          "start_line": 1,
+          "end_line": 3
+        }
+      ],
+      "results": [
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        }
+      ]
+    },
+    {
+      "question_id": "held-04",
+      "query": "How do tests assert an accepted receipt is returned?",
+      "category": "tests",
+      "mode": "lexical",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 6.072,
+      "relevance": [
+        {
+          "path": "tests/test_transfers.py",
+          "start_line": 6,
+          "end_line": 8
+        }
+      ],
+      "results": [
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[tool.pytest.ini_options]",
+          "start_line": 7,
+          "end_line": 8
+        }
+      ]
+    },
+    {
+      "question_id": "held-05",
+      "query": "Will stored transfers survive a process restart?",
+      "category": "documentation",
+      "mode": "lexical",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 4.573,
+      "relevance": [
+        {
+          "path": "docs/architecture.rst",
+          "start_line": 11,
+          "end_line": 15
+        }
+      ],
+      "results": [
+        {
+          "path": "docs/architecture.rst",
+          "label": "Persistence limits",
+          "start_line": 11,
+          "end_line": 15
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-06",
+      "query": "What is the project name and required Python version?",
+      "category": "config",
+      "mode": "lexical",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 4.791,
+      "relevance": [
+        {
+          "path": "pyproject.toml",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        }
+      ]
+    },
+    {
+      "question_id": "held-07",
+      "query": "What is the production encryption key value?",
+      "category": "unanswerable",
+      "mode": "lexical",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 4.939,
+      "relevance": [],
+      "results": [
+        {
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt.decorate",
+          "start_line": 14,
+          "end_line": 15
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-08",
+      "query": "Who reviewed the latest open pull request?",
+      "category": "unanswerable",
+      "mode": "lexical",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 4.692,
+      "relevance": [],
+      "results": [
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "question_id": "held-01",
+      "query": "ValidationError",
+      "category": "identifier",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 836.073,
+      "relevance": [
+        {
+          "path": "app/validation.py",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_zero_amount_rejected",
+          "start_line": 9,
+          "end_line": 14
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_positive_amount",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-02",
+      "query": "Where is a copy of each accepted transfer kept?",
+      "category": "conceptual",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 0.25,
+      "latency_ms": 10.264,
+      "relevance": [
+        {
+          "path": "app/storage.py",
+          "start_line": 8,
+          "end_line": 10
+        }
+      ],
+      "results": [
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-03",
+      "query": "What normalizes display label whitespace without changing case?",
+      "category": "conceptual",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 11.66,
+      "relevance": [
+        {
+          "path": "app/formatting.py",
+          "start_line": 1,
+          "end_line": 3
+        }
+      ],
+      "results": [
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt.decorate",
+          "start_line": 14,
+          "end_line": 15
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.traced",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[tool.pytest.ini_options]",
+          "start_line": 7,
+          "end_line": 8
+        }
+      ]
+    },
+    {
+      "question_id": "held-04",
+      "query": "How do tests assert an accepted receipt is returned?",
+      "category": "tests",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 10.625,
+      "relevance": [
+        {
+          "path": "tests/test_transfers.py",
+          "start_line": 6,
+          "end_line": 8
+        }
+      ],
+      "results": [
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_positive_amount",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_zero_amount_rejected",
+          "start_line": 9,
+          "end_line": 14
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-05",
+      "query": "Will stored transfers survive a process restart?",
+      "category": "documentation",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 9.056,
+      "relevance": [
+        {
+          "path": "docs/architecture.rst",
+          "start_line": 11,
+          "end_line": 15
+        }
+      ],
+      "results": [
+        {
+          "path": "docs/architecture.rst",
+          "label": "Persistence limits",
+          "start_line": 11,
+          "end_line": 15
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        }
+      ]
+    },
+    {
+      "question_id": "held-06",
+      "query": "What is the project name and required Python version?",
+      "category": "config",
+      "mode": "semantic",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 11.71,
+      "relevance": [
+        {
+          "path": "pyproject.toml",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[tool.pytest.ini_options]",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "question_id": "held-07",
+      "query": "What is the production encryption key value?",
+      "category": "unanswerable",
+      "mode": "semantic",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 23.211,
+      "relevance": [],
+      "results": [
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "README.md",
+          "label": "Ledger API — synthetic Understory fixture",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Ledger architecture",
+          "start_line": 1,
+          "end_line": 3
+        }
+      ]
+    },
+    {
+      "question_id": "held-08",
+      "query": "Who reviewed the latest open pull request?",
+      "category": "unanswerable",
+      "mode": "semantic",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 17.252,
+      "relevance": [],
+      "results": [
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.__init__",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        }
+      ]
+    },
+    {
+      "question_id": "held-01",
+      "query": "ValidationError",
+      "category": "identifier",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 10.815,
+      "relevance": [
+        {
+          "path": "app/validation.py",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_zero_amount_rejected",
+          "start_line": 9,
+          "end_line": 14
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        },
+        {
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_positive_amount",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-02",
+      "query": "Where is a copy of each accepted transfer kept?",
+      "category": "conceptual",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 0.2,
+      "latency_ms": 17.18,
+      "relevance": [
+        {
+          "path": "app/storage.py",
+          "start_line": 8,
+          "end_line": 10
+        }
+      ],
+      "results": [
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "question_id": "held-03",
+      "query": "What normalizes display label whitespace without changing case?",
+      "category": "conceptual",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 14.249,
+      "relevance": [
+        {
+          "path": "app/formatting.py",
+          "start_line": 1,
+          "end_line": 3
+        }
+      ],
+      "results": [
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt.decorate",
+          "start_line": 14,
+          "end_line": 15
+        },
+        {
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.traced",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        }
+      ]
+    },
+    {
+      "question_id": "held-04",
+      "query": "How do tests assert an accepted receipt is returned?",
+      "category": "tests",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 15.277,
+      "relevance": [
+        {
+          "path": "tests/test_transfers.py",
+          "start_line": 6,
+          "end_line": 8
+        }
+      ],
+      "results": [
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation.test_positive_amount",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        }
+      ]
+    },
+    {
+      "question_id": "held-05",
+      "query": "Will stored transfers survive a process restart?",
+      "category": "documentation",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 14.388,
+      "relevance": [
+        {
+          "path": "docs/architecture.rst",
+          "start_line": 11,
+          "end_line": 15
+        }
+      ],
+      "results": [
+        {
+          "path": "docs/architecture.rst",
+          "label": "Persistence limits",
+          "start_line": 11,
+          "end_line": 15
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.append_transfer",
+          "start_line": 8,
+          "end_line": 10
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.transfer",
+          "start_line": 10,
+          "end_line": 13
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService.__init__",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "app/service.py",
+          "label": "app.service.TransferService",
+          "start_line": 4,
+          "end_line": 13
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        }
+      ]
+    },
+    {
+      "question_id": "held-06",
+      "query": "What is the project name and required Python version?",
+      "category": "config",
+      "mode": "hybrid",
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "latency_ms": 12.645,
+      "relevance": [
+        {
+          "path": "pyproject.toml",
+          "start_line": 1,
+          "end_line": 5
+        }
+      ],
+      "results": [
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/api.py",
+          "label": "app.api.create_transfer",
+          "start_line": 6,
+          "end_line": 9
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[tool.pytest.ini_options]",
+          "start_line": 7,
+          "end_line": 8
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "tests/test_validation.py",
+          "label": "tests.test_validation",
+          "start_line": 1,
+          "end_line": 4
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "question_id": "held-07",
+      "query": "What is the production encryption key value?",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 12.966,
+      "relevance": [],
+      "results": [
+        {
+          "path": "README.md",
+          "label": "Tests and limitations",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.normalize",
+          "start_line": 13,
+          "end_line": 15
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt",
+          "start_line": 11,
+          "end_line": 16
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.café_receipt.decorate",
+          "start_line": 14,
+          "end_line": 15
+        },
+        {
+          "path": "app/formatting.py",
+          "label": "app.formatting.normalize",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "pyproject.toml",
+          "label": "[project]",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "config/settings.json",
+          "label": "{",
+          "start_line": 1,
+          "end_line": 6
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.validate_payload",
+          "start_line": 8,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "question_id": "held-08",
+      "query": "Who reviewed the latest open pull request?",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "recall_at_5": null,
+      "mrr_at_10": null,
+      "latency_ms": 13.144,
+      "relevance": [],
+      "results": [
+        {
+          "path": "app/api.py",
+          "label": "app.api",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "docs/architecture.rst",
+          "label": "Request flow",
+          "start_line": 4,
+          "end_line": 10
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation.ValidationError",
+          "start_line": 4,
+          "end_line": 5
+        },
+        {
+          "path": "README.md",
+          "label": "Purpose and architecture",
+          "start_line": 6,
+          "end_line": 12
+        },
+        {
+          "path": "README.md",
+          "label": "Validation",
+          "start_line": 13,
+          "end_line": 18
+        },
+        {
+          "path": "app/validation.py",
+          "label": "app.validation",
+          "start_line": 1,
+          "end_line": 3
+        },
+        {
+          "path": "app/storage.py",
+          "label": "app.storage.LedgerStore.__init__",
+          "start_line": 5,
+          "end_line": 6
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers",
+          "start_line": 1,
+          "end_line": 5
+        },
+        {
+          "path": "tests/test_transfers.py",
+          "label": "tests.test_transfers.test_receipt_is_returned",
+          "start_line": 6,
+          "end_line": 8
+        },
+        {
+          "path": "app/legacy.py",
+          "label": "app.legacy.legacy_receipt",
+          "start_line": 4,
+          "end_line": 5
+        }
+      ]
+    }
+  ]
+}
