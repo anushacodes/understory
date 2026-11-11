@@ -48,7 +48,7 @@ class Repository(Base):
     )
     generation: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    __table_args__ = (UniqueConstraint("owner_scope", "name"),)
+    __table_args__ = (UniqueConstraint("owner_scope", "name"), UniqueConstraint("owner_scope", "provider_id"))
 
 
 class Snapshot(Base):

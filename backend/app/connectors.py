@@ -162,13 +162,20 @@ class GitHubConnector:
                 "github_unavailable", "GitHub request failed. The worker will retry when eligible.", 503, True
             ) from exc
 
-    def resolve(self, name: str, ref: str) -> str:
+    def identify(self, name: str) -> str:
         repo = self.request(f"/repos/{name}")
-        self.provider_id = str(repo.get("id", ""))
+        provider_id = repo.get("id")
+        if not isinstance(provider_id, int) or isinstance(provider_id, bool) or provider_id <= 0:
+            raise AppError("invalid_repository", "GitHub returned no stable repository identity.")
+        self.provider_id = str(provider_id)
         if repo.get("private") or repo.get("full_name", "").lower() != name:
             raise AppError(
                 "unsupported_repository", "Only the canonical public allowlisted repository can be imported."
             )
+        return self.provider_id
+
+    def resolve(self, name: str, ref: str) -> str:
+        self.identify(name)
         commit = self.request(f"/repos/{name}/commits/{quote(ref, safe='')}")
         sha = commit.get("sha", "")
         if not re.fullmatch("[0-9a-f]{40}", sha):
