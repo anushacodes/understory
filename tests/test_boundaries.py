@@ -108,3 +108,18 @@ def test_ready_snapshot_and_source_cannot_be_rewritten(database):
     with pytest.raises(IntegrityError), SessionLocal.begin() as session:
         session.get(SourceVersion, source_b).content = "replacement"
         session.flush()
+
+
+def test_ready_snapshot_membership_cannot_be_extended(database):
+    _, _, _, snap_b, source_b = seed_boundaries()
+    with pytest.raises(IntegrityError), SessionLocal.begin() as session:
+        session.add(
+            SnapshotFile(
+                snapshot_id=snap_b,
+                path="source.py",
+                source_version_id=source_b,
+                byte_count=6,
+                state="included",
+            )
+        )
+        session.flush()
