@@ -31,6 +31,26 @@ export function params(values: Record<string, string | number | boolean | undefi
   return `?${query}`;
 }
 
+export async function progressStream(jobId: string, after: number, signal: AbortSignal, event: (id: number, kind: string) => void) {
+  const response = await fetch(`/v1/jobs/${jobId}/events`, { signal, headers: { Authorization: `Bearer ${ownerToken}`, ...(after ? { 'Last-Event-ID': String(after) } : {}) } });
+  if (response.status === 410) throw new ApiError('event_history_expired', 'Reload job state to resume progress.', 410);
+  if (!response.ok || !response.body) throw new ApiError('progress_unavailable', 'Progress connection is unavailable.', response.status);
+  const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = '';
+  try {
+    while (true) {
+      const result = await reader.read(); if (result.done) break;
+      buffer += decoder.decode(result.value, { stream: true });
+      let boundary: number;
+      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+        const block = buffer.slice(0, boundary); buffer = buffer.slice(boundary + 2);
+        const id = Number(block.match(/^id: (\d+)$/m)?.[1] ?? 0);
+        const kind = block.match(/^event: (.+)$/m)?.[1] ?? 'progress';
+        if (id > after) { after = id; event(id, kind); }
+      }
+    }
+  } finally { reader.releaseLock(); }
+}
+
 export async function allPages<T>(path: string, signal?: AbortSignal): Promise<T[]> {
   const items: T[] = [];
   let cursor: string | null = null;
