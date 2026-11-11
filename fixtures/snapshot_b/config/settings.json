@@ -1,0 +1,6 @@
+{
+  "application": "ledger-fixture",
+  "storage": "memory",
+  "currency": "USD",
+  "log_level": "INFO"
+}
