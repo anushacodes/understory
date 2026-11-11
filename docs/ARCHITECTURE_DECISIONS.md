@@ -2,7 +2,7 @@
 
 This is a living decision record for the actual project. Read it with the [technical specification](TECHNICAL_SPEC.md), [implementation backlog](IMPLEMENTATION_BACKLOG.md), and code. Update it whenever an architectural choice changes.
 
-**Honesty rule:** alternatives below are design alternatives considered, not systems we necessarily built or benchmarked. A reason for choosing an approach is not a measured result. Verification references show what can support an interview answer; they do not imply that every release gate has passed. Understory is still being implemented.
+**Honesty rule:** alternatives below are design alternatives considered, not systems we necessarily built or benchmarked. A reason for choosing an approach is not a measured result. Verification references show what can support an interview answer; they do not imply that every release gate has passed. The local MVP is implemented; [VERIFICATION.md](VERIFICATION.md) records the measured scope and remaining limits.
 
 ## Decision index
 
@@ -12,19 +12,22 @@ This is a living decision record for the actual project. Read it with the [techn
 | ADR-02 | Modular Python backend with separate API and worker | Implemented |
 | ADR-03 | One PostgreSQL database, including pgvector and durable jobs | Implemented locally |
 | ADR-04 | At-least-once jobs with leases, fencing and idempotency | Implemented; recovery tests exist |
-| ADR-05 | Commit-pinned immutable snapshots and atomic activation | Implemented; further database hardening remains in progress |
+| ADR-05 | Commit-pinned immutable snapshots and atomic activation | Implemented with database scope/immutability triggers |
 | ADR-06 | Static parsing and bounded, read-only source handling | Implemented |
 | ADR-07 | Structural passages with exact source provenance | Implemented |
-| ADR-08 | Exact, lexical, semantic and hybrid retrieval | Implemented; quality evaluation remains in progress |
-| ADR-09 | Local embeddings and Groq answer generation | Local inference verified; real answer validation in progress |
-| ADR-10 | Cache embeddings by effective input and model identity | Implemented; reuse/version tests are being expanded |
+| ADR-08 | Exact, lexical, semantic and hybrid retrieval | Implemented; controlled development/held-out reports recorded |
+| ADR-09 | Local embeddings and Groq answer generation | Local inference and actual Groq outputs verified |
+| ADR-10 | Cache embeddings by effective input and model identity | Implemented; refresh reuse and incompatible-version tests pass |
 | ADR-11 | Retrieve, assemble, generate, validate; bounded evidence | Implemented; deterministic publication tests exist |
 | ADR-12 | Persisted runs and evidence over conversational memory | Implemented |
-| ADR-13 | SSE for durable progress; publish answers after validation | Implemented; reconnect/reload verification being expanded |
+| ADR-13 | SSE for durable progress; publish answers after validation | Implemented; API replay and stopped-worker browser reload verified |
 | ADR-14 | React/Vite frontend following the supplied HTML | Implemented; initial desktop/mobile checks pass |
 | ADR-15 | Owner-operated local delivery before hosting | User confirmed; implemented locally |
-| ADR-16 | Controlled A/B fixtures and separate quality measures | Fixtures/tests implemented; evaluation report still in progress |
-| ADR-17 | Locked tooling, migrations, focused commits and private remote | Implemented; delivery work ongoing |
+| ADR-16 | Controlled A/B fixtures and separate quality measures | Fixtures, frozen targets and evaluation reports recorded |
+| ADR-17 | Locked tooling, migrations, focused commits and private remote | Implemented; private remote and focused commits |
+| ADR-18 | Storage-level provenance and immutability | Implemented and tested |
+| ADR-19 | Retained successful history and explicit abandoned-work cleanup | Implemented; restore drill verified |
+| ADR-20 | Persisted execution/request/token budgets | Implemented; bounded retries verified |
 
 ## ADR-01 — Keep the product focused on repository understanding
 
@@ -94,7 +97,7 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Evidence.** Refresh/deletion tests in [test_imports.py](../tests/test_imports.py), activation-order tests in [test_jobs.py](../tests/test_jobs.py), and the mid-generation refresh case in [test_answers.py](../tests/test_answers.py).
 
-**Interview explanation.** The important unit of consistency is the selected snapshot, not the branch name shown in the UI. Remaining database-level invariant hardening should be described separately from already-tested service behavior.
+**Interview explanation.** The important unit of consistency is the selected snapshot, not the branch name shown in the UI. Database triggers now also reject cross-scope associations and modifications to ready source placements and published evidence.
 
 ## ADR-06 — Inspect downloaded source without executing it
 
@@ -148,11 +151,11 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Tradeoff.** Local embeddings consume CPU/memory and need an initial model download. Groq's free plan has model-specific limits; free availability is not an unlimited or permanent guarantee. Selected source evidence leaves the machine when Groq generation is enabled.
 
-**Evidence.** Local model identity/inference was exercised against the installed FastEmbed version. Real answer tests are ongoing. Provider references: [FastEmbed](https://qdrant.tech/documentation/embeddings/fastembed/), [Groq rate limits](https://console.groq.com/docs/rate-limits), and [Groq JSON output behavior](https://console.groq.com/docs/structured-outputs).
+**Evidence.** Local model identity/inference was exercised against the installed FastEmbed version. The actual adapter completed single-file, multi-file, overview and two unsupported-question demonstrations; see [live report](../evals/reports/live.json). Provider references: [FastEmbed](https://qdrant.tech/documentation/embeddings/fastembed/), [Groq rate limits](https://console.groq.com/docs/rate-limits), and [Groq JSON output behavior](https://console.groq.com/docs/structured-outputs).
 
 **Interview explanation.** Separate embedding and generation workloads, data transmission and operating costs. The architecture does not require them to use the same vendor.
 
-**Revision during implementation.** The initially proposed `llama-3.3-70b-versatile` returned `404 model_not_found` for the configured account. The authenticated model-list endpoint showed `openai/gpt-oss-120b`, so the default was changed to that accessible model, with low reasoning effort and the existing bounded-output contract. This was an availability correction based on a real API response, not a benchmark proving one model superior. Model-list visibility still requires a real inference check.
+**Revision during implementation.** The initially proposed `llama-3.3-70b-versatile` returned `404 model_not_found` for the configured account. The authenticated model-list endpoint showed `openai/gpt-oss-120b`, so the default was changed to that accessible model, with low reasoning effort and the existing bounded-output contract. This was an availability correction based on a real API response, not a benchmark proving one model superior. Subsequent real inference succeeded; one 429 was retried and uncertain usage remained conservatively reserved.
 
 ## ADR-10 — Key vector reuse by actual input and effective model identity
 
@@ -164,7 +167,7 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Tradeoff.** Computing the effective local-model fingerprint costs startup/import work. Some content-equivalent placements cannot reuse vectors. Model changes require another snapshot configuration rather than silently modifying ready content.
 
-**Evidence.** [providers.py](../backend/app/providers.py), snapshot configuration hashes and the embedding cache identity. Expanded reuse/configuration tests remain part of implementation verification.
+**Evidence.** [providers.py](../backend/app/providers.py), snapshot configuration hashes and the embedding cache identity. [test_embeddings.py](../tests/test_embeddings.py) verifies compatible refresh reuse, asset-version invalidation and explicit lexical fallback.
 
 **Interview prompt.** “Tell me about a cache invalidation decision.” Explain what must be in the key and the intentional cost of conservative invalidation.
 
@@ -192,7 +195,7 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Tradeoff.** Repeated questions can be independent work. Historical sources and outputs require retention/storage policy. Exporting an answer is not a full database or repository backup.
 
-**Evidence.** [models.py](../backend/app/models.py), [worker.py](../backend/app/worker.py), run read/export APIs and history UI. More database-level evidence normalization and purge checks should be tracked as hardening rather than assumed complete.
+**Evidence.** [models.py](../backend/app/models.py), [worker.py](../backend/app/worker.py), run read/export APIs and history UI. Normalized evidence and ready-source placements are protected by database triggers; retention and two-repository purge checks pass.
 
 **Interview prompt.** “How did you make results reproducible?” Explain the retained inputs and configuration, while noting that recreating the same external model text is not guaranteed.
 
@@ -206,7 +209,7 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Tradeoff.** Reconnect/cursor expiry and event retention need explicit handling. SSE is progress streaming, not answer-token streaming. Authentication uses fetch-based streaming so the owner credential stays in headers.
 
-**Evidence.** [main.py](../backend/app/main.py) event endpoint, [useJob.ts](../frontend/src/useJob.ts), [api.ts](../frontend/src/api.ts), durable replay API tests. Reconnect/reload browser coverage is being expanded.
+**Evidence.** [main.py](../backend/app/main.py) event endpoint, [useJob.ts](../frontend/src/useJob.ts), [api.ts](../frontend/src/api.ts), durable replay API tests. The stopped-worker browser reload and saved-answer reauthentication/history cases now pass.
 
 **Interview explanation.** A notification tells the client that something changed; durable state determines what actually happened.
 
@@ -248,7 +251,7 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Tradeoff.** Synthetic fixtures are narrower than real repository behavior. Human relevance/support review takes effort. Held-out results may show that hybrid is not better or that a release target is not met.
 
-**Evidence.** [Acceptance plan](ACCEPTANCE_CRITERIA.md), fixture A/B and existing tests. The benchmark corpus/report and remaining recovery/real-provider checks are still being completed; no improvement percentage is asserted here.
+**Evidence.** [Acceptance plan](ACCEPTANCE_CRITERIA.md), fixture A/B and existing tests. Development/held-out/warm reports, subprocess recovery and actual Groq checks are recorded in [VERIFICATION.md](VERIFICATION.md); no general improvement percentage is asserted here.
 
 **Interview prompt.** “How did you know it worked?” Name the failure cases and test/evaluation layers, then quote only results present in the final evidence report.
 
@@ -266,6 +269,65 @@ This is a living decision record for the actual project. Read it with the [techn
 
 **Interview prompt.** “Tell me about improving engineering quality.” Discuss reproducibility and review boundaries, not the number of commits as a performance result.
 
+## ADR-18 — Enforce provenance and immutability in PostgreSQL as well as Python
+
+**Trigger.** Service validation alone leaves accidental direct writes able to associate foreign source rows or modify evidence after publication.
+
+**Decision and reason.** Add normalized `run_evidence`, foreign keys, unique identities, range checks and database triggers. Ready snapshot membership, matching passages/symbols, source bodies, and published evidence/output cannot be changed in place. Validate full manifest/placement/vector completeness before activation. Retain JSON output for convenient replay, with relational provenance for stronger boundary checks.
+
+**Alternative.** Rely only on ORM/service conventions, or normalize every response field. The former is easier to bypass accidentally; the latter adds joins and migration work without improving every field's invariant.
+
+**Tradeoff.** PostgreSQL-specific trigger maintenance and more careful purge/cascade behavior. These constraints reject invalid relationships; they do not decide whether model prose is semantically supported.
+
+**Evidence.** Migrations 0003–0005; [boundary tests](../tests/test_boundaries.py), [answer tests](../tests/test_answers.py), and [retention/purge tests](../tests/test_maintenance.py). The source-version body and ready placement identities are different invariants and are protected separately.
+
+**Interview prompt.** “How did you prevent data integrity bugs?” Show one forbidden cross-snapshot insert and one forbidden modification to published evidence. Explain why both service and storage boundaries matter.
+
+## ADR-19 — Keep successful history; explicitly collect abandoned work
+
+**Trigger.** Historical answers depend on old source versions. Unconditional age-based cleanup could destroy their citations, while retaining every failed batch and progress event forever grows local storage.
+
+**Decision and reason.** Keep ready snapshots, saved runs and job/idempotency summaries until explicit owner purge. Remove terminal progress events and unreferenced failed/staging snapshots after seven days through an explicit maintenance command. Collect shared vectors only when no passage references them. Reject imports at the retained-source byte ceiling rather than silently evicting evidence.
+
+**Alternative.** Automatically expire every old snapshot, or never collect anything. The first breaks historical attribution; the second leaves abandoned state unbounded. A scheduled cleanup service is unnecessary for the local MVP.
+
+**Tradeoff.** Manual maintenance and physical disk monitoring remain necessary. The 512 MiB default is retained source bytes, not total PostgreSQL size. Answer export is a bounded evidence artifact, while database backup is a separate operation.
+
+**Evidence.** [maintenance.py](../backend/app/maintenance.py), [operations runbook](OPERATIONS.md), [cleanup/purge tests](../tests/test_maintenance.py), and an actual disposable database [restore result](../evals/reports/restore.json).
+
+**Interview prompt.** “How did you balance reliability and cost?” Explain why referenced evidence receives stronger retention than progress events and abandoned staging data.
+
+## ADR-20 — Persist resource budgets across retry attempts
+
+**Trigger.** A per-attempt timeout or request counter resets when a worker restarts. Repeated crashes could otherwise exceed the intended job budget. A provider call can also fail after consuming an unknown number of tokens.
+
+**Decision and reason.** Persist active execution seconds and attempt start time on the job, preserve GitHub request counts in checkpoints, and cap attempts/backoff. Use an advisory lock to reserve generation tokens before the call; settle to actual usage when known and retain the reservation when unknown. Distinguish active work from queue/backoff time.
+
+**Alternative.** Count only successful requests or use process-memory counters. That understates uncertain consumption and loses enforcement across restarts.
+
+**Tradeoff.** Conservative unknown reservations can disable generation before the provider's actual quota is exhausted. No distributed system here can promise exactly-once external billing. A bounded blocking call can return after the active deadline, but the next lease/checkpoint blocks publication.
+
+**Evidence.** [test_jobs.py](../tests/test_jobs.py), [test_connectors.py](../tests/test_connectors.py), [test_answers.py](../tests/test_answers.py) and the real 429/retry usage rows in [live.json](../evals/reports/live.json).
+
+**Interview prompt.** “Describe a failure case you initially might have missed.” Walk through an uncertain external call, a retry, and the difference between database deduplication and external consumption.
+
+## Delivery corrections worth studying
+
+- **Provider availability:** an advertised model returned 404 for this account; checking the authenticated model list and then running inference justified changing the configurable default. This was an availability correction, not a model-quality comparison.
+- **Test isolation:** PostgreSQL integration tests run actual migrations in isolated schemas; a real worker subprocess is terminated and reclaimed. A mocked queue would not prove locking or durable recovery behavior.
+- **Mobile answer navigation:** an automatic source preview hid the newly opened answer on narrow screens. Keep the preview populated while leaving the answer pane selected; source navigation happens on citation selection. Desktop/mobile browser flows exposed the mismatch.
+- **Reauthentication timing:** owner credentials intentionally disappear on page reload. The browser test must wait for the authenticated workspace to mount before selecting a mobile pane; removing that wait would mask a timing failure as missing History UI.
+
+## Three practice STAR outlines
+
+These are project study examples. Adapt them to work you actually understand and can explain; acknowledge assistance and do not invent team conflict, production incidents or independent authorship.
+
+**Scope and ambiguity.** Situation: an initial blueprint mixed repository onboarding with issue/PR research. Task: clarify the intended product before building. Action: apply the user's repository-only correction to the scope, schema, API and supplied UI mapping; retain the visual reference while removing unsupported issue/call-graph claims. Result: the delivered local workflow imports, searches and explains source at one selected baseline. Tradeoff: live maintainer/discussion questions explicitly remain outside scope.
+
+**Reliability and ownership.** Situation: an import can stop after some files have committed, and a replacement worker can race an old attempt. Task: recover without exposing partial content or accepting stale writes. Action: use staging snapshots, unique batch identities, leases/fencing and atomic generation-controlled activation; terminate a real worker subprocess after committed batches and reclaim it. Result: the test resumes at the same pinned SHA without duplicate identities, and stale-token writes are rejected. Tradeoff: external provider calls can still repeat; exactly-once execution is not claimed.
+
+**Measurement and technical judgment.** Situation: literal symbols and conceptual questions need different retrieval signals, under a free-first local constraint. Task: choose a useful search approach without inventing an improvement metric. Action: implement exact/lexical/local-vector/RRF modes, label 24 fixture questions, freeze targets after the development baseline, and report held-out results unchanged. Result: held-out hybrid Recall@5 was 1.00 and MRR@10 about 0.87 on six answerable questions; semantic MRR was slightly higher (0.875). Tradeoff: the fixture is small, interval-overlap relevance is permissive, and these numbers do not establish general accuracy. Discuss why retaining a useful hybrid mode does not require claiming it beat every baseline.
+
 ## Turning these into behavioral answers
 
 Use the decisions above as evidence for a truthful STAR outline:
@@ -273,7 +335,7 @@ Use the decisions above as evidence for a truthful STAR outline:
 1. **Situation:** a developer needs to understand an unfamiliar repository, with a fixed UI reference and a free-first local operating constraint.
 2. **Task:** build a usable system whose imports recover and whose explanations can be inspected against one source baseline.
 3. **Action:** choose one concrete decision, explain the rejected alternative and tradeoff, then show the relevant code/test or observed failure.
-4. **Result:** report only verified outcomes from the final evaluation/test record. During implementation say “implemented and tested in controlled scenarios,” not “production proven.”
+4. **Result:** report only verified outcomes from the final evaluation/test record. Say “implemented and tested in controlled scenarios,” not “production proven.”
 
 Useful story pairings:
 
