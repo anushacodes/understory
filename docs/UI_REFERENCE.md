@@ -1,6 +1,6 @@
 # Understory — UI reference and implementation mapping
 
-Updated: November 10, 2026. Status: planning notes extracted from the supplied HTML; no frontend implementation has started.
+Updated: November 11, 2026. Status: implemented meadow direction with light/dark themes; desktop/mobile browser evidence is recorded in [VERIFICATION.md](VERIFICATION.md).
 
 ## Authority
 

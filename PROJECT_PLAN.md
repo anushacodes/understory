@@ -1,6 +1,6 @@
 # Understory — project plan
 
-Updated: November 10, 2026. Status: planning specification; implementation has not started.
+Updated: November 11, 2026. Status: local MVP implemented. Start with [README.md](README.md), [verification evidence](docs/VERIFICATION.md), and [architecture decisions](docs/ARCHITECTURE_DECISIONS.md).
 
 ## Confirmed purpose
 

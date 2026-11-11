@@ -1,8 +1,21 @@
 # Understory — milestone backlog
 
-Updated: November 10, 2026. Status: planned work only. No milestone is complete and no implementation has been started by creating these documents.
+Updated: November 11, 2026. Status: local M0–M5 delivery implemented; evidence and qualifications appear below and in [VERIFICATION.md](VERIFICATION.md). Original task dependencies are retained for study.
 
 Scope: repository understanding. [MVP_SCOPE.md](MVP_SCOPE.md) defines the experience; [TECHNICAL_SPEC.md](TECHNICAL_SPEC.md) defines contracts; [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md) defines gate IDs.
+
+## Milestone evidence
+
+| Milestone | Delivered evidence |
+| --- | --- |
+| M0 | Pydantic/OpenAPI contracts, synthetic A/B, 24 labeled questions, dependency locks and UI mapping |
+| M1 | Real PostgreSQL migrations, job/lease/API tests, subprocess crash/reclaim test, pinned GitHub import |
+| M2 | Parser/source/range/filter tests and desktop/mobile browse/search checks |
+| M3 | Local 384-dimensional model, compatible cache/version tests and four-mode development/held-out reports |
+| M4 | Real Groq outputs, negative output/budget tests, overview/history/export/citation browser flows |
+| M5 | Retention/purge and storage tests, database restore drill, real ItsDangerous import, warm measurements, documented local setup |
+
+The detailed gate evidence and limitations are in [VERIFICATION.md](VERIFICATION.md). Hosted deployment, anonymous access and MCP remain optional and unimplemented. There is no automatic malformed-answer repair; validation fails closed instead. Physical database capacity includes more than the source-byte import ceiling.
 
 ## Working rules
 
