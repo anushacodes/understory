@@ -1,8 +1,20 @@
 # Understory — initial technical specification
 
-Updated: November 10, 2026. Status: proposed implementation contract, not running software.
+Updated: November 11, 2026. Status: implemented local contract. Original design rationale is retained below; the current choices and deviations are recorded here and in [architecture decisions](ARCHITECTURE_DECISIONS.md).
 
 Product authority: [MVP_SCOPE.md](MVP_SCOPE.md). Verification authority: [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md). Changes to a contract should update its acceptance criteria and dependent backlog items together.
+
+## Current delivery choices
+
+The API binds to 127.0.0.1:8017, Vite to 5173, and Docker PostgreSQL to 54329. Routes use `/v1`; `/api-docs` exposes the actual generated contract. `backend/app/schemas.py` and migrations are executable schema authority.
+
+Local embeddings use FastEmbed `BAAI/bge-small-en-v1.5` with 384 dimensions and effective asset/preprocessing fingerprints. Generation uses configurable Groq `openai/gpt-oss-120b`, tested with the supplied key and a 50,000-token daily application ceiling. Exact and lexical retrieval need no provider. Dependency versions are pinned in uv/npm lockfiles.
+
+Database triggers enforce ready membership, source/evidence scope, source/range provenance and immutable published content. Normalized `run_evidence` supports relational boundary checks alongside the retained JSON response. Ready snapshots/runs and job/idempotency summaries remain until purge; seven-day cleanup is explicit, not scheduled automatically. The storage ceiling measures retained source bytes; physical database size includes additional vectors/indexes/events and must be monitored separately.
+
+Malformed/invalid generated output fails closed without an automatic repair call. Transient provider failures retry within three attempts, capped retry delays and persisted active execution budgets. Embedding vectors use an exact scoped scan for this bounded local corpus. SSE delivers progress; validated answer text is published as a complete result.
+
+D-01/02/03/04/05/08/09 are resolved for local delivery. D-06 hosting remains out of scope. D-07 is resolved for the public evaluation corpus (ItsDangerous 2.2.0, BSD-3-Clause); the application remains private with no redistribution license selected. [Operations](OPERATIONS.md), [third-party notices](../THIRD_PARTY_NOTICES.md), and [verification](VERIFICATION.md) give the executable procedures and evidence.
 
 ## Architecture and responsibilities
 
@@ -19,7 +31,7 @@ Use a modular application with a Python API, a separate Python worker, a static 
 | Model adapters | Embedding and generation interfaces, effective model identity, timeouts, usage and errors |
 | PostgreSQL | Immutable source versions, snapshots/manifests, indexes, jobs/events, answer evidence and usage |
 
-Retain the existing proposed stack: Python 3.12+; FastAPI/Pydantic; SQLAlchemy/psycopg/Alembic; Python AST; httpx; React/TypeScript/Vite; pytest/PostgreSQL integration checks/Playwright; uv/npm and local container tooling. These are technology choices, not verified version compatibility. Select supported versions and consult current documentation when producing dependency/configuration code. No hosted database, inference provider, or auth service has been selected.
+Retain the existing proposed stack: Python 3.12+; FastAPI/Pydantic; SQLAlchemy/psycopg/Alembic; Python AST; httpx; React/TypeScript/Vite; pytest/PostgreSQL integration checks/Playwright; uv/npm and local container tooling. These are technology choices, not verified version compatibility. Select supported versions and consult current documentation when producing dependency/configuration code. No hosted database or remote authentication service has been selected; local generation uses Groq as recorded above.
 
 No autonomous tool loop is needed. Questions use bounded retrieval → evidence assembly → generation → validation. There is no repository code execution, issue research, or second scheduler.
 

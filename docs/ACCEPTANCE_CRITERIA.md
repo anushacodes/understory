@@ -1,12 +1,12 @@
 # Understory — acceptance criteria and evaluation plan
 
-Updated: November 10, 2026. Status: proposed gates; none have been executed.
+Updated: November 11, 2026. Status: executable acceptance gates, with results and limitations in [VERIFICATION.md](VERIFICATION.md).
 
 These criteria cover repository understanding only. IDs connect product behavior to implementation tasks. “Pass” requires recorded evidence, not a checkbox based on visual inspection alone.
 
 ## Controlled evaluation corpus
 
-The following is a fixture design, not a fixture already created. Build it during milestone M0. Produce two immutable source snapshots without requiring a Git commit in this workspace; archive contents and recorded SHA identities can be synthetic and must be labeled as such. Any actual Git commit or push requires a specific user request.
+The fixture design below is implemented in `fixtures/` and the inert adversarial tests. Produce two immutable source snapshots without requiring a Git commit in this workspace; archive contents and recorded SHA identities can be synthetic and must be labeled as such. Any actual Git commit or push requires a specific user request.
 
 | Fixture feature | Snapshot A | Snapshot B / failure variant |
 | --- | --- | --- |
@@ -93,7 +93,7 @@ For generation, split each answer into substantive repository claims and label e
 
 Mandatory mechanical gates have zero tolerance for invalid citations, cross-snapshot leakage, unauthorized reads, duplicate identity rows, and stale-worker publication. For the controlled release demonstration, no contradicted or unsupported substantive claims may remain in the reviewed outputs, and all labeled unanswerable cases must express the evidence gap.
 
-Numeric retrieval-quality, latency and model-cost thresholds are **open**, not assumed achievements. After the first development baseline, record proposed thresholds and rationale before running the held-out set. Freeze them before release evaluation. If hybrid does not improve over the baseline, report that result; do not invent an improvement or repeatedly tune against held-out questions.
+Numeric retrieval-quality, latency and model-cost thresholds were frozen in [evals/README.md](../evals/README.md) before the held-out report. After the first development baseline, record proposed thresholds and rationale before running the held-out set. Freeze them before release evaluation. If hybrid does not improve over the baseline, report that result; do not invent an improvement or repeatedly tune against held-out questions.
 
 Evidence bundle: fixture/archive hashes and real-repo SHA when available; question split/labels; parser/chunker/model identities; environment; per-query metrics; citation/claim review; warm/cold timings with sample counts; provider consumption; recovery and boundary results; unresolved limitations. Report p50/p95 only with sample sizes and describe small-sample uncertainty.
 

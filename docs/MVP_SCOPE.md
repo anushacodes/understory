@@ -1,6 +1,6 @@
 # Understory — MVP scope and user journey
 
-Updated: November 10, 2026. Status: planning specification; no application has been implemented.
+Updated: November 11, 2026. Status: local MVP implemented. See [verification evidence](VERIFICATION.md) and [runnable setup](../README.md).
 
 ## Product decision
 
@@ -19,10 +19,10 @@ Primary user: a developer onboarding to a small public Python repository. Portfo
 | Supported corpus | Existing blueprint, retained | Small public Python repositories; Python, Markdown/RST, and selected configuration files |
 | Core experience | Planning baseline | Import → overview → explore/search → source viewer → cited Q&A |
 | Architecture | Existing blueprint, retained | Python API, separate durable worker, one PostgreSQL database, web frontend |
-| Initial operating mode | Proposed default | Local development and an owner-operated local demo; hosting is a separate readiness gate |
-| Access | Proposed default | One owner identity; all repository/job/answer operations require owner access in the MVP |
-| Cost | Unresolved | $0 remains an aspiration; no paid resource or provider commitment is authorized by these documents |
-| Models and dependency versions | Unresolved | Select and verify before model integration; see the technical decision register |
+| Initial operating mode | User confirmed | Local development and an owner-operated local demo; hosting is a separate readiness gate |
+| Access | Implemented local choice | One owner identity; all repository/job/answer operations require owner access in the MVP |
+| Cost | Bounded local choice | Local embeddings; user-enabled Groq with 50,000 daily reserved/settled tokens; provider quotas still apply |
+| Models and dependency versions | Implemented and locked | FastEmbed BGE small, Groq gpt-oss-120b; uv/npm lockfiles and recorded model asset identity |
 
 Proposed defaults make the plan concrete without presenting unconfirmed preferences as user decisions. The first release is usable locally. A hosted portfolio showcase is a delivery option after its costs and access model are settled. Public anonymous querying is not required for local MVP completion.
 
@@ -96,7 +96,7 @@ The owner imports commit B. Changed files are reprocessed, compatible unchanged 
 
 The supplied [Understory.html](../Understory.html) establishes the visual direction: scenic landing, serif wordmark/display type, compact three-pane repository/question/evidence workspace, and supplied light/dark treatments. [UI_REFERENCE.md](UI_REFERENCE.md) records the boards, observed styles and scope corrections. The workspace surfaces above occupy that composition rather than implying a different visual design. Include the landing as the visual entry surface; its input respects owner access and requires a selected ready repository before answering.
 
-Component implementation remains outside this planning task. Source rendering must remain keyboard accessible, escape untrusted content, and communicate state without relying only on color. Select the landing variant and initial theme behavior before frontend implementation; the canyon board is an option rather than an assumed choice.
+The component implementation follows this reference. Source rendering must remain keyboard accessible, escape untrusted content, and communicate state without relying only on color. The user selected meadow with light/dark themes; canyon remains an unused reference option.
 
 ## Demonstration
 
