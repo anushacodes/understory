@@ -33,6 +33,8 @@ def canonical_repository(value: str) -> str:
 
 
 def safe_archive(data: bytes, config) -> list[File]:
+    if len(data) > config.max_archive_bytes:
+        raise AppError("archive_size_limit", "Compressed archive exceeds its size budget.")
     files = []
     total = included = count = 0
     seen = set()
