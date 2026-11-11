@@ -1,0 +1,12 @@
+{
+  "method": "pg_dump custom format; pg_restore into disposable database",
+  "counts": {
+    "repositories": 2,
+    "ready_snapshots": 3,
+    "successful_runs": 11,
+    "evidence_rows": 128,
+    "source_versions": 53
+  },
+  "restored_counts_match": true,
+  "invalid_evidence_rows": 0
+}
