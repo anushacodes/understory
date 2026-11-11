@@ -36,6 +36,8 @@ class Lease:
         self.stop = threading.Event()
         self.error = None
         self.started = time.monotonic()
+        with SessionLocal() as session:
+            self.prior_seconds = session.get(Job, job_id).execution_seconds
 
     def check(self):
         if self.error:
@@ -43,7 +45,7 @@ class Lease:
         with SessionLocal() as session:
             job = session.get(Job, self.job_id)
             deadline = 900 if job.kind == "import" else 90
-        if time.monotonic() - self.started > deadline:
+        if self.prior_seconds + time.monotonic() - self.started > deadline:
             raise AppError("deadline_exceeded", "Job execution deadline exceeded.")
 
     def renew(self):
@@ -72,11 +74,34 @@ def import_repository(job_id: str, token: int, config, lease):
         request = job.request
         sha = job.resolved_sha
     source = connector(name, config)
+    if name not in config.allowed_repositories:
+        raise AppError("repository_not_allowed", "This repository is no longer approved for imports.")
+
+    def count_request():
+        with SessionLocal.begin() as session:
+            current = guard(session, job_id, token)
+            count = int(current.checkpoint.get("github_requests", 0)) + 1
+            if count > 20:
+                raise AppError("github_budget", "GitHub request budget exhausted across import attempts.")
+            current.checkpoint = {**current.checkpoint, "github_requests": count}
+            emit(session, current, "github_request", attempted_requests=count)
+
+    source.on_request = count_request
     checkpoint(job_id, token, "resolve")
     if not sha:
         sha = source.resolve(name, request["ref"])
         with SessionLocal.begin() as session:
             job = guard(session, job_id, token)
+            repo = session.scalar(
+                select(Repository).where(Repository.id == job.repository_id).with_for_update()
+            )
+            if source.provider_id:
+                if repo.provider_id and repo.provider_id != source.provider_id:
+                    raise AppError(
+                        "repository_identity_changed",
+                        "The allowlisted repository name now identifies a different provider object.",
+                    )
+                repo.provider_id = source.provider_id
             job.resolved_sha = sha
             emit(session, job, "source_pinned", commit_sha=sha)
     identity = embedding_identity(config)
@@ -99,6 +124,25 @@ def import_repository(job_id: str, token: int, config, lease):
             )
             session.add(snapshot)
             session.flush()
+        if snapshot.state != "ready":
+            builder = session.scalar(
+                select(Job.id)
+                .where(
+                    Job.snapshot_id == snapshot.id,
+                    Job.id != job_id,
+                    Job.status == "running",
+                    Job.lease_until > func.now(),
+                )
+                .limit(1)
+            )
+            if builder:
+                raise AppError(
+                    "snapshot_build_busy",
+                    "A current worker is building this same snapshot. This job will retry after the lease interval.",
+                    503,
+                    True,
+                    retry_after=config.lease_seconds,
+                )
         job.snapshot_id = snapshot.id
         snapshot_id, already_ready = snapshot.id, snapshot.state == "ready"
     if already_ready:
@@ -214,7 +258,7 @@ def import_repository(job_id: str, token: int, config, lease):
                             Passage(source_version_id=source_version.id, config_hash=config_hash, **item)
                         )
             job.stage = "parse"
-            job.checkpoint = {"files_processed": n, **counters}
+            job.checkpoint = {**job.checkpoint, "files_processed": n, **counters}
             emit(session, job, "progress", **job.checkpoint)
     if identity["provider"] != "disabled":
         with SessionLocal() as session:
@@ -243,7 +287,7 @@ def import_repository(job_id: str, token: int, config, lease):
                     session.flush()
                 session.get(Passage, passage_id).embedding_key = key
                 job.stage = "embed"
-                job.checkpoint = {**counters, "embedded_passages": n}
+                job.checkpoint = {**job.checkpoint, **counters, "embedded_passages": n}
                 emit(session, job, "progress", **job.checkpoint)
     lease.check()
     checkpoint(job_id, token, "validate")
@@ -260,6 +304,44 @@ def import_repository(job_id: str, token: int, config, lease):
         )
         if actual != len(files):
             raise AppError("manifest_mismatch", "Manifest failed completeness validation.")
+        rows = session.execute(
+            select(Passage, SourceVersion)
+            .join(SourceVersion)
+            .join(SnapshotFile, SnapshotFile.source_version_id == SourceVersion.id)
+            .where(
+                SnapshotFile.snapshot_id == snapshot_id,
+                SnapshotFile.state == "included",
+                Passage.config_hash == config_hash,
+            )
+        ).all()
+        symbols = session.scalars(
+            select(Symbol)
+            .join(SnapshotFile, SnapshotFile.source_version_id == Symbol.source_version_id)
+            .where(
+                SnapshotFile.snapshot_id == snapshot_id,
+                SnapshotFile.state == "included",
+                Symbol.parser == index_config["parser"],
+            )
+        ).all()
+        if len(rows) != counters["passages"] or len(symbols) != counters["symbols"]:
+            raise AppError("index_incomplete", "Source placement counts failed validation.")
+        for passage, original in rows:
+            if not (1 <= passage.start_line <= passage.end_line <= original.line_count) or (
+                passage.excerpt
+                != "\n".join(original.content.splitlines()[passage.start_line - 1 : passage.end_line])
+            ):
+                raise AppError("index_incomplete", "Passage ranges failed original source validation.")
+            if identity["provider"] != "disabled":
+                vector = session.get(Embedding, passage.embedding_key) if passage.embedding_key else None
+                if (
+                    vector is None
+                    or vector.config != identity
+                    or vector.dimensions != identity["dimensions"]
+                    or len(vector.vector) != identity["dimensions"]
+                ):
+                    raise AppError(
+                        "index_incomplete", "Compatible vectors are missing from the staging index."
+                    )
         snapshot.coverage = counters
     activate(job_id, token, snapshot_id)
 
@@ -280,6 +362,9 @@ def activate(job_id: str, token: int, snapshot_id: str):
             repo.active_snapshot_id = snapshot.id
         job.status, job.stage = "succeeded", "activate"
         job.finished_at = session.scalar(select(func.now()))
+        if job.attempt_started_at:
+            job.execution_seconds += max(0, (job.finished_at - job.attempt_started_at).total_seconds())
+            job.attempt_started_at = None
         job.lease_until = None
         job.result = {
             "snapshot_id": snapshot.id,
@@ -519,6 +604,9 @@ def answer_question(job_id: str, token: int, config, lease):
         job.status, job.stage = "succeeded", "publish"
         job.result = {"run_id": run_id}
         job.finished_at = session.scalar(select(func.now()))
+        if job.attempt_started_at:
+            job.execution_seconds += max(0, (job.finished_at - job.attempt_started_at).total_seconds())
+            job.attempt_started_at = None
         job.lease_until = None
         emit(session, job, "succeeded", run_id=run_id)
 
