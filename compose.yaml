@@ -1,0 +1,18 @@
+services:
+  database:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: understory
+      POSTGRES_PASSWORD: understory
+      POSTGRES_DB: understory
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - understory-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U understory -d understory"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  understory-data:
