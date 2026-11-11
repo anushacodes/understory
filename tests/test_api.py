@@ -115,3 +115,18 @@ def test_chunked_request_size_is_bounded(client):
     response = client.post("/v1/repositories", content=chunks(), headers={"Content-Type": "application/json"})
     assert response.status_code == 413
     assert response.json()["error"]["code"] == "request_too_large"
+
+
+def test_every_data_route_requires_owner_before_disclosing_or_mutating(client):
+    import re
+
+    from app.main import app
+
+    client.headers.pop("Authorization")
+    for route in app.routes:
+        if not route.path.startswith("/v1/") or route.path in {"/v1/health", "/v1/ready"}:
+            continue
+        path = re.sub(r"\{[^}]+\}", "guessed-id", route.path)
+        for method in route.methods & {"GET", "POST", "DELETE"}:
+            response = client.request(method, path)
+            assert response.status_code == 401, (method, path, response.status_code)

@@ -104,6 +104,13 @@ def import_repository(job_id: str, token: int, config, lease):
                 repo.provider_id = source.provider_id
             job.resolved_sha = sha
             emit(session, job, "source_pinned", commit_sha=sha)
+    elif hasattr(source, "identify"):
+        current_provider_id = source.identify(name)
+        with SessionLocal() as session:
+            if session.get(Repository, job.repository_id).provider_id != current_provider_id:
+                raise AppError(
+                    "repository_identity_changed", "Pinned repository identity changed; retry is refused."
+                )
     identity = embedding_identity(config)
     index_config = {**config.indexing_config(), "embedding": identity}
     config_hash = digest(index_config)
@@ -360,6 +367,7 @@ def activate(job_id: str, token: int, snapshot_id: str):
         activated = job.generation == repo.generation
         if activated:
             repo.active_snapshot_id = snapshot.id
+        job.error = None
         job.status, job.stage = "succeeded", "activate"
         job.finished_at = session.scalar(select(func.now()))
         if job.attempt_started_at:
@@ -601,6 +609,7 @@ def answer_question(job_id: str, token: int, config, lease):
             ):
                 raise AppError("invalid_evidence", "Run evidence failed source/range validation.", 500)
         session.get(AnswerRun, run_id).output = output
+        job.error = None
         job.status, job.stage = "succeeded", "publish"
         job.result = {"run_id": run_id}
         job.finished_at = session.scalar(select(func.now()))

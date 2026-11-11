@@ -90,3 +90,45 @@ def test_failed_refresh_preserves_previous_snapshot(database, config):
     with SessionLocal() as session:
         assert session.get(Job, job_id).status == "failed"
         assert session.get(Repository, repo_id).active_snapshot_id == active
+
+
+def test_empty_parse_failed_corpus_is_explicit_and_cannot_generate(database, config, monkeypatch):
+    import pytest
+    from app.connectors import FixtureConnector
+    from app.errors import AppError
+
+    monkeypatch.setattr(FixtureConnector, "sources", lambda self, ref: {"broken.py": b"def invalid(:\n"})
+    repo_id = add_repo()
+    snapshot_id = import_ref(repo_id, "a", config)
+    with SessionLocal() as session:
+        snapshot = session.get(Snapshot, snapshot_id)
+        assert snapshot.coverage["empty"] is True
+        assert snapshot.coverage["parse_failed_files"] == 1
+        assert search(session, repo_id, "invalid", snapshot_id, "lexical")["results"] == []
+    with pytest.raises(AppError) as error, SessionLocal.begin() as session:
+        enqueue(session, repo_id, "question", {"question": "explain"}, "empty-question")
+    assert error.value.code == "empty_corpus"
+
+
+def test_mid_import_storage_failure_keeps_staging_hidden(database, config):
+    from dataclasses import replace
+
+    import pytest
+    from app.errors import AppError
+    from app.jobs import ready_snapshot
+
+    repo_id = add_repo()
+    active = import_ref(repo_id, "a", config)
+    with SessionLocal.begin() as session:
+        job, _ = enqueue(session, repo_id, "import", {"ref": "b"}, "bounded-refresh")
+        job_id = job.id
+    run_once(replace(config, storage_limit=1))
+    with SessionLocal() as session:
+        job = session.get(Job, job_id)
+        assert job.status == "failed"
+        assert job.error["code"] == "storage_limit"
+        assert job.snapshot_id
+        assert session.get(Repository, repo_id).active_snapshot_id == active
+        with pytest.raises(AppError) as error:
+            ready_snapshot(session, repo_id, job.snapshot_id)
+        assert error.value.code == "snapshot_not_ready"

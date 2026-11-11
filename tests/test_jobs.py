@@ -103,3 +103,30 @@ def test_provider_retry_after_is_respected(database, config):
         job = session.get(Job, job_id)
         now = session.scalar(select(func.now()))
         assert (job.retry_at - now).total_seconds() > 44
+
+
+def test_running_import_cancellation_does_not_activate_partial_snapshot(database, config, monkeypatch):
+    from app.indexing import parse
+    from app.worker import run_once
+    from test_imports import add_repo, import_ref
+
+    repo_id = add_repo()
+    active = import_ref(repo_id, "a", config)
+    with SessionLocal.begin() as session:
+        job, _ = enqueue(session, repo_id, "import", {"ref": "b"}, "cancel-running")
+        job_id = job.id
+    calls = 0
+
+    def cancel_during_parse(*args):
+        nonlocal calls
+        calls += 1
+        if calls == 3:
+            with SessionLocal.begin() as session:
+                session.get(Job, job_id).cancel_requested = True
+        return parse(*args)
+
+    monkeypatch.setattr("app.worker.parse", cancel_during_parse)
+    run_once(config)
+    with SessionLocal() as session:
+        assert session.get(Job, job_id).status == "cancelled"
+        assert session.get(Repository, repo_id).active_snapshot_id == active

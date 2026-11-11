@@ -54,8 +54,6 @@ def test_refresh_reuses_compatible_vectors_and_rejects_changed_assets(database, 
         monkeypatch.setattr("app.retrieval.embedding_identity", lambda config: dict(identity))
         with pytest.raises(AppError):
             search(session, repo_id, "validation", a, "hybrid", config=config)
-        result = search(
-            session, repo_id, "validation", a, "hybrid", fallback=True, config=config
-        )
+        result = search(session, repo_id, "validation", a, "hybrid", fallback=True, config=config)
         assert result["effective_mode"] == "lexical"
         assert result["warnings"]
