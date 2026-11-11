@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 from app.db import SessionLocal
 from app.errors import AppError, LostLease
-from app.jobs import checkpoint, claim, enqueue, guard
+from app.jobs import checkpoint, claim, enqueue, guard, heartbeat, settle_error
 from app.models import Job, JobEvent, Repository, Snapshot
 from app.worker import activate
 from sqlalchemy import func, select
@@ -75,3 +75,31 @@ def test_queue_capacity_is_enforced(database):
     with SessionLocal.begin() as session, pytest.raises(AppError) as error:
         enqueue(session, repo_id, "import", {"ref": "main"}, "third")
     assert error.value.code == "import_capacity"
+
+
+def test_active_deadline_is_not_reset_by_retry_or_heartbeat(database, config):
+    _, job_id = repo_and_job()
+    claim(config)
+    with SessionLocal.begin() as session:
+        session.get(Job, job_id).attempt_started_at = session.scalar(select(func.now())) - timedelta(
+            seconds=901
+        )
+    heartbeat(job_id, 1, config)
+    settle_error(job_id, 1, AppError("temporary", "Retry later", 503, True), config)
+    with SessionLocal.begin() as session:
+        job = session.get(Job, job_id)
+        assert job.execution_seconds >= 900
+        job.retry_at = session.scalar(select(func.now())) - timedelta(seconds=1)
+    assert claim(config) is None
+    with SessionLocal() as session:
+        assert session.get(Job, job_id).error["code"] == "deadline_exceeded"
+
+
+def test_provider_retry_after_is_respected(database, config):
+    _, job_id = repo_and_job()
+    claim(config)
+    settle_error(job_id, 1, AppError("rate_limit", "Retry later", 503, True, retry_after=45), config)
+    with SessionLocal() as session:
+        job = session.get(Job, job_id)
+        now = session.scalar(select(func.now()))
+        assert (job.retry_at - now).total_seconds() > 44

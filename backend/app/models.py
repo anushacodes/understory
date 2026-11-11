@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     String,
@@ -151,6 +152,8 @@ class Job(Base):
     resolved_sha: Mapped[str | None]
     snapshot_id: Mapped[str | None] = mapped_column(ForeignKey("snapshots.id"))
     attempt: Mapped[int] = mapped_column(default=0)
+    execution_seconds: Mapped[float] = mapped_column(Float, default=0)
+    attempt_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     lease_token: Mapped[int] = mapped_column(default=0)
     lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

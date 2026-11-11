@@ -1,5 +1,6 @@
 import hashlib
 import json
+import random
 from datetime import timedelta
 
 from sqlalchemy import and_, func, or_, select, text
@@ -138,6 +139,21 @@ def claim(config=settings) -> tuple[str, int] | None:
         )
         if not job:
             return None
+        if job.status == "running" and job.attempt_started_at:
+            job.execution_seconds += max(
+                0, (min(now, job.lease_until) - job.attempt_started_at).total_seconds()
+            )
+            job.attempt_started_at = None
+        deadline = 900 if job.kind == "import" else 90
+        if job.execution_seconds >= deadline:
+            job.status = "failed"
+            job.error = {
+                "code": "deadline_exceeded",
+                "message": "Job active execution budget exhausted across attempts.",
+            }
+            job.finished_at = now
+            emit(session, job, "failed", error=job.error)
+            return None
         if job.cancel_requested or job.attempt >= config.max_attempts:
             job.status = "cancelled" if job.cancel_requested else "failed"
             job.error = (
@@ -149,6 +165,7 @@ def claim(config=settings) -> tuple[str, int] | None:
             emit(session, job, job.status)
             return None
         job.attempt += 1
+        job.attempt_started_at = now
         job.lease_token += 1
         job.status = "running"
         job.lease_until = now + timedelta(seconds=config.lease_seconds)
@@ -207,6 +224,9 @@ def settle_error(job_id: str, token: int, error: Exception, config=settings):
     with SessionLocal.begin() as session:
         job = guard(session, job_id, token, check_cancel=False)
         now = session.scalar(select(func.now()))
+        if job.attempt_started_at:
+            job.execution_seconds += max(0, (now - job.attempt_started_at).total_seconds())
+            job.attempt_started_at = None
         if isinstance(error, Cancelled) or job.cancel_requested:
             job.status = "cancelled"
         else:
@@ -224,7 +244,8 @@ def settle_error(job_id: str, token: int, error: Exception, config=settings):
             }
             if app_error.retryable and job.attempt < config.max_attempts:
                 job.status = "retry_wait"
-                job.retry_at = now + timedelta(seconds=min(60, 2**job.attempt))
+                delay = max(min(60, 2**job.attempt + random.random()), app_error.retry_after or 0)
+                job.retry_at = now + timedelta(seconds=min(300, delay))
             else:
                 job.status = "failed"
         if job.status in TERMINAL:
