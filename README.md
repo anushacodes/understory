@@ -1,26 +1,41 @@
 # Understory
 
-Understand a small public Python repository through search, static source exploration, and cited explanations. Imports and answers stay pinned to immutable source snapshots. The meadow UI follows the supplied HTML, with light and dark themes.
+Explore Python repositories with semantic search and source-cited answers.
 
-The local MVP includes a durable worker, safe GitHub imports, exact/lexical/semantic/hybrid search, source-range citations, generated overviews, saved questions, exports, refreshes and owner purge. Imported code is never executed.
+Import a public GitHub repository, browse its files and symbols, and ask how the code works. Every import and answer is tied to a specific commit, so you can follow citations back to the exact source lines.
 
-## Run locally
+![Understory workspace showing a repository file tree, overview, and source viewer](docs/screenshots/workspace-desktop.png)
 
-Requirements: Docker, Python 3.12, [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ (validated here with Node 26). Run commands from the repository root.
+## Features
+
+- **Search four ways** — exact, lexical, semantic, or hybrid, with filters by file type and path.
+- **Follow the evidence** — cited answers and repository overviews link to source ranges.
+- **Keep your context** — revisit saved questions, export answers, and browse older snapshots after a refresh.
+- **Run locally** — local embeddings, optional Groq generation, and background jobs that recover after a restart.
+
+Built with React, TypeScript, FastAPI, and PostgreSQL with pgvector.
+
+## Quick start
+
+Requires **Python 3.12**, **Node.js 22.12+**, **Docker Compose**, and **[uv](https://docs.astral.sh/uv/)**. Run commands from the repository root.
+
+### 1. Install and configure
 
 ```sh
 uv sync --locked --extra embeddings
 npm ci --prefix frontend
-cp .env.example .env  # only on first setup; preserve an existing .env
+cp -n .env.example .env  # preserves an existing .env
 ```
 
-Set `OWNER_TOKEN` in `.env` to a random value generated locally:
+Generate an owner token and set it as `OWNER_TOKEN` in `.env`:
 
 ```sh
 python3 -c 'import secrets; print(secrets.token_urlsafe(32))'
 ```
 
-The server reads `.env`; the frontend never receives provider keys. `EMBEDDING_PROVIDER=fastembed` downloads and runs the BGE small model locally. Set it to `disabled` for exact/lexical exploration without model downloads. Semantic snapshots require a reimport after changing model configuration.
+The default embedding provider downloads and runs a small model locally. Set `EMBEDDING_PROVIDER=disabled` for exact and lexical search without model downloads. Reimport repositories after changing embedding settings.
+
+### 2. Start the database and load the demo
 
 ```sh
 docker compose -p understory-local up -d database
@@ -28,7 +43,11 @@ uv run alembic upgrade head
 uv run --extra embeddings understory-demo
 ```
 
-Start these in separate terminals:
+The demo loads a synthetic repository so you can try the workspace before importing your own.
+
+### 3. Start the app
+
+Run each command in a separate terminal:
 
 ```sh
 uv run --extra embeddings understory-api
@@ -36,26 +55,26 @@ uv run --extra embeddings understory-worker
 npm run dev --prefix frontend
 ```
 
-Open **http://127.0.0.1:5173**, choose **Open Understory**, and enter your owner token. The API uses **8017**; PostgreSQL uses **54329**. API health/readiness are `/v1/health` and `/v1/ready`; the authenticated contract is available at `/api-docs`.
+Open **[127.0.0.1:5173](http://127.0.0.1:5173)**, choose **Open Understory**, and enter your owner token.
 
-The demo is clearly labeled synthetic. To import a real repository, add its canonical `owner/name` to `ALLOWED_REPOSITORIES`, restart API/worker, then use the import form. `pallets/itsdangerous` at tag `2.2.0` was verified. Keep imports small: compressed archive 20 MiB, expanded content 100 MiB, supported text 20 MiB, 5,000 entries, 512 KiB per file. Python, Markdown/RST and selected text configs are supported; inventory explains exclusions.
+To import a real repository, add its `owner/name` to `ALLOWED_REPOSITORIES` in `.env`, restart the API and worker, and use **Import repository**. Start with a small public Python project; `pallets/itsdangerous` at tag `2.2.0` is a verified example.
 
-## Enable Groq answers
+## Optional: AI answers
 
-Configure locally, then restart API and worker:
+Set these values in `.env`, then restart the API and worker:
 
 ```dotenv
 GENERATION_PROVIDER=groq
 GENERATION_MODEL=openai/gpt-oss-120b
-GROQ_API_KEY=your_local_key
+GROQ_API_KEY=your_key_here
 DAILY_TOKEN_BUDGET=50000
 ```
 
-That model passed real inference with this account; account availability can differ. Generation sends the question and selected source excerpts to Groq. Embeddings stay local. The daily limit accounts for actual usage when returned and conservative reservations when usage is unknown. It does not override provider quotas. Search remains available when generation is unavailable.
+Use a model available to your Groq account. Questions and selected source excerpts are sent to Groq; embeddings stay local and provider keys stay on the server. Search works without generation. The daily token budget is an application limit; provider quotas still apply.
 
-## Verify
+## Development
 
-With PostgreSQL running, deterministic tests use isolated schemas and do not call Groq:
+With PostgreSQL running:
 
 ```sh
 uv run ruff check backend migrations tests scripts
@@ -63,22 +82,25 @@ uv run pytest -q
 npm run build --prefix frontend
 ```
 
-For browser checks, start API, worker and frontend and seed fixture A first. Browser downloads are local tooling:
+Backend tests use isolated database schemas and make no Groq calls. For browser tests, start the app and seed demo snapshot A, then run:
 
 ```sh
 PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/playwright" npm exec --prefix frontend -- playwright install chromium
 PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/playwright" npm test --prefix frontend
 ```
 
-Real generation tests are opt-in and consume the configured quota. See [verification evidence](docs/VERIFICATION.md) for all release checks, [operations](docs/OPERATIONS.md) for recovery/retention/backup, and [evaluation](evals/README.md) for corpus labels, frozen targets and reproducible commands.
+The API runs at `http://127.0.0.1:8017` with interactive docs at `/api-docs`. Health checks are `/v1/health` and `/v1/ready`; PostgreSQL uses port `54329`.
 
-## Study the project
+## Documentation
 
-- [Architecture decisions and interview notes](docs/ARCHITECTURE_DECISIONS.md): reasons, alternatives, tradeoffs, evidence and behavioral prompts.
-- [Technical specification](docs/TECHNICAL_SPEC.md): identities, boundaries, jobs and contracts.
-- [MVP scope](docs/MVP_SCOPE.md), [acceptance gates](docs/ACCEPTANCE_CRITERIA.md), and [milestone evidence](docs/IMPLEMENTATION_BACKLOG.md).
-- [UI reference mapping](docs/UI_REFERENCE.md) and the original [Understory.html](Understory.html).
+- [Architecture](docs/ARCHITECTURE_DECISIONS.md) — design decisions and tradeoffs.
+- [Technical specification](docs/TECHNICAL_SPEC.md) — data model, jobs, and API contracts.
+- [Operations](docs/OPERATIONS.md) — recovery, model changes, retention, and backups.
+- [Evaluation](evals/README.md) and [verification](docs/VERIFICATION.md) — methodology, results, and release checks.
+- [Scope](docs/MVP_SCOPE.md) — supported workflows and limits.
 
-Local owner operation is the delivery target. Hosting, anonymous access, private-repository imports, additional language parsers and MCP are outside this MVP. Small controlled evaluation results do not establish general answer accuracy or production throughput. Source citation validation checks provenance and references; human review is still needed to assess whether a claim follows from a source.
+## Scope and license
 
-The source repository is private. No project-wide redistribution license has been selected. Bundled third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Understory is a local, single-owner MVP for small public Python repositories. It indexes Python, Markdown/RST, and selected text configs; excluded files remain visible in the inventory. Imported code is never executed. Hosted access, private repositories, and additional language parsers are outside the current scope. Citations identify the source used; review generated claims against it.
+
+No project-wide license has been selected. See [third-party notices](THIRD_PARTY_NOTICES.md) for bundled dependencies and assets.
